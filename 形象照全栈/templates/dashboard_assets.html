@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>资产与订单 - 控制台</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="/static/css/system.css">
+    <link rel="stylesheet" href="/static/css/layout.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+
+    <style>
+        /* Topup Modal Specific Styles */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            display: none;
+            align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        .modal-overlay.open { display: flex; opacity: 1; }
+        
+        .modal-card {
+            background-color: var(--color-surface-pure);
+            border-radius: var(--radius-lg);
+            width: 100%; max-width: 500px;
+            box-shadow: var(--shadow-lg);
+            transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow: hidden;
+            border: 1px solid var(--color-border-subtle);
+        }
+        .modal-overlay.open .modal-card { transform: scale(1); }
+
+        .modal-header {
+            padding: var(--space-24);
+            border-bottom: 1px solid var(--color-border-subtle);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .modal-body { padding: var(--space-24); }
+        .modal-footer {
+            padding: var(--space-16) var(--space-24);
+            border-top: 1px solid var(--color-border-subtle);
+            background-color: var(--color-surface-subtle);
+            display: flex; justify-content: flex-end; gap: var(--space-12);
+        }
+
+        /* Package Selection Cards */
+        .plan-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-12); margin-top: var(--space-16); }
+        .plan-card {
+            border: 2px solid var(--color-border-subtle);
+            border-radius: var(--radius-md);
+            padding: var(--space-16);
+            cursor: pointer; text-align: center;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        .plan-card:hover { border-color: var(--color-border-strong); }
+        .plan-card.selected {
+            border-color: var(--color-text-primary);
+            background-color: oklch(from var(--color-surface-elevated) 0.98 c h);
+        }
+        .plan-badge {
+            position: absolute; top: -10px; right: -5px;
+            background-color: var(--color-status-error); color: #fff;
+            font-size: 10px; padding: 2px 6px; border-radius: 10px; font-weight: bold;
+        }
+
+        /* Payment Methods */
+        .pay-method-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-12); margin-top: var(--space-16); }
+        .pay-card {
+            border: 1px solid var(--color-border-strong);
+            border-radius: var(--radius-md);
+            padding: var(--space-12);
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: var(--space-8);
+            transition: all 0.2s ease; background-color: var(--color-surface-pure);
+        }
+        .pay-card.selected { border: 2px solid var(--color-text-primary); background-color: var(--color-surface-subtle); font-weight: var(--weight-semibold); }
+        
+        .pay-icon-wechat { color: #09b83e; font-size: 1.2rem; }
+        .pay-icon-alipay { color: #1677ff; font-size: 1.2rem; }
+
+        /* Toast Container */
+        #toast-container { position: fixed; bottom: var(--space-32); right: var(--space-32); z-index: 10000; display: flex; flex-direction: column; gap: var(--space-8); }
+        .toast {
+            min-width: 250px; padding: var(--space-12) var(--space-24); border-radius: var(--radius-sm);
+            font-size: var(--text-small); font-weight: var(--weight-medium);
+            box-shadow: var(--shadow-md); color: white; display: flex; align-items: center; justify-content: space-between;
+            animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .toast.success { background-color: var(--color-status-success); }
+        .toast.error { background-color: var(--color-status-error); }
+        
+        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { to { opacity: 0; transform: translateY(-10px); } }
+    </style>
+</head>
+<body>
+
+    <nav class="header-sticky" style="height: 64px; display: flex; align-items: center; border-bottom: 1px solid var(--color-border-subtle);">
+        <div class="container flex-row justify-between w-100" style="width: 100%;">
+            <div class="flex-row align-center">
+                <button class="btn btn-ghost" style="padding: 4px 8px; font-size: 1.2rem; border-radius: 4px; margin-right: 8px;" onclick="toggleSidebar()">☰</button>
+                <a href="index.html" style="font-weight: var(--weight-semibold); font-size: 1.1rem; color: var(--color-text-primary); text-decoration: none;">Auralis<span style="color:var(--color-text-secondary); margin-left: 6px; font-size: .82em; letter-spacing: .08em;">曜临</span></a>
+            </div>
+            
+            <div class="user-dropdown-container">
+                <div class="flex-row gap-sm align-center" style="cursor: pointer; padding: 4px;">
+                    <span id="user-display-name" style="font-size: var(--text-small); color: var(--color-text-secondary); font-weight: var(--weight-medium);">加载中...</span>
+                    <div style="width: 32px; height: 32px; background-color: var(--color-border-strong); color: var(--color-text-inverse); display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold;" id="user-avatar-letter">U</div>
+                </div>
+                <div class="user-dropdown-menu">
+                    <div style="font-weight: var(--weight-medium); margin-bottom: var(--space-4);">当前可用额度</div>
+                    <div class="flex-row justify-between align-center">
+                        <span style="font-size: 1.5rem; color: var(--color-text-primary); font-family: var(--font-sans); font-weight: var(--weight-semibold);" id="nav-credit-balance">-- <span style="font-size: var(--text-small); color: var(--color-text-secondary); font-weight: normal;">点</span></span>
+                        <span class="badge badge-success">专业版会员</span>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <div style="font-size: var(--text-small); color: var(--color-text-secondary); margin-bottom: var(--space-12);">生成 1 张 4K 极清照片消耗 1 点积分。</div>
+                    <a href="#" onclick="openTopupModal()" class="btn btn-secondary" style="width: 100%; padding: 8px; font-size: 14px; margin-bottom: 8px;">立刻补充算力</a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" onclick="executeLogout()" style="color: var(--color-status-error); text-decoration: none; font-size: var(--text-small); display: block; text-align: center;">退出账号</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container dashboard-layout" id="dash-grid" style="transition: grid-template-columns 0.3s ease;">
+        <aside class="sidebar" id="dashboard-sidebar" style="display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; transition: opacity 0.2s ease;">
+            <div style="min-width: 200px;">
+                <a href="dashboard.html" class="nav-item">我的形象库</a>
+                <a href="dashboard_assets.html" class="nav-item active">资产与订单</a>
+                <a href="dashboard_settings.html" class="nav-item">账户设置</a>
+                <a href="dashboard_privacy.html" class="nav-item">隐私与数据控制</a>
+                <div style="height: 1px; background-color: var(--color-border-subtle); margin: var(--space-8) 0;"></div>
+                <a href="admin.html" class="nav-item" style="color: var(--color-status-success); font-weight: var(--weight-medium);"><span style="margin-right:8px;">★</span>高管数据中心</a>
+                <a href="#" class="nav-item" style="color: var(--color-text-tertiary);" onclick="alert('系统人工客服已受理连线请求。\n\n支持邮箱：support@auralis.ai\n在线时段：工作日 9:00 - 18:00')"><span style="margin-right:8px;">📞</span>联系人工客服</a>
+            </div>
+        </aside>
+
+        <main class="content-area">
+            <h1 class="mb-lg" style="font-size: var(--text-h2);">资产与订单</h1>
+            
+            <div class="card mb-xl">
+                <h3 class="mb-sm">当前剩余算力</h3>
+                <div style="font-size: 3rem; font-weight: var(--weight-semibold); color: var(--color-text-primary);" id="main-credit-balance">-- <span style="font-size: var(--text-body); color: var(--color-text-secondary); font-weight: normal;">点积分</span></div>
+                <button class="btn btn-primary" onclick="openTopupModal()" style="margin-top: var(--space-16);">去充值</button>
+            </div>
+            
+            <h3 class="mb-md">最近流水记录</h3>
+            <div id="transaction-list">
+                <div class="card-ghost flex-row justify-between align-center mb-sm">
+                    <div>
+                        <div style="font-weight: var(--weight-medium);">专业版订阅充值 (微信支付)</div>
+                        <div style="font-size: var(--text-small); color: var(--color-text-secondary);">2026-04-16 10:20:00</div>
+                    </div>
+                    <div style="font-weight: var(--weight-semibold); color: var(--color-status-success);">+60 点</div>
+                </div>
+                <div class="card-ghost flex-row justify-between align-center mb-sm">
+                    <div>
+                        <div style="font-weight: var(--weight-medium);">超清大图渲染导出</div>
+                        <div style="font-size: var(--text-small); color: var(--color-text-secondary);">2026-04-16 10:35:00</div>
+                    </div>
+                    <div style="font-weight: var(--weight-medium); color: var(--color-text-primary);">-1 点</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- The Topup Modal -->
+    <div class="modal-overlay" id="topup-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 style="margin: 0; font-size: var(--text-h3);">补充算力单次包</h3>
+                <button class="btn btn-ghost" onclick="closeTopupModal()" style="padding: 4px;">✕</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin: 0; color: var(--color-text-secondary); font-size: var(--text-small);">单次生成消耗 1 积分，算力长期有效不过期。</p>
+                
+                <div class="plan-grid">
+                    <div class="plan-card" onclick="selectPlan(this, 10, 9.9)">
+                        <div style="font-size: var(--text-h3); font-weight: var(--weight-semibold);">10 点</div>
+                        <div style="font-size: var(--text-small); color: var(--color-text-secondary); margin-top: 4px;">¥9.90</div>
+                    </div>
+                    <div class="plan-card selected" onclick="selectPlan(this, 50, 39.9)">
+                        <div class="plan-badge">立省 15%</div>
+                        <div style="font-size: var(--text-h3); font-weight: var(--weight-semibold);">50 点</div>
+                        <div style="font-size: var(--text-small); color: var(--color-text-secondary); margin-top: 4px;">¥39.90</div>
+                    </div>
+                    <div class="plan-card" onclick="selectPlan(this, 200, 119.0)">
+                        <div class="plan-badge" style="background-color: var(--color-text-primary);">核心用户</div>
+                        <div style="font-size: var(--text-h3); font-weight: var(--weight-semibold);">200 点</div>
+                        <div style="font-size: var(--text-small); color: var(--color-text-secondary); margin-top: 4px;">¥119.00</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: var(--space-24);">
+                    <label style="font-size: var(--text-small); font-weight: var(--weight-medium); color: var(--color-text-primary);">选择付款方式</label>
+                    <div class="pay-method-grid">
+                        <div class="pay-card selected" id="pay-wechat" onclick="selectPayMethod('wechat')">
+                            <span class="pay-icon-wechat">🟢</span>微信支付
+                        </div>
+                        <div class="pay-card" id="pay-alipay" onclick="selectPayMethod('alipay')">
+                            <span class="pay-icon-alipay">🔵</span>支付宝
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer flex-row justify-between align-center">
+                <div style="font-size: var(--text-small); color: var(--color-text-secondary);">应付金额: <strong style="font-size: 1.2rem; color: var(--color-text-primary); margin-left: 4px;" id="checkout-total">¥39.90</strong></div>
+                <div>
+                    <button class="btn btn-ghost" onclick="closeTopupModal()">取消</button>
+                    <button class="btn btn-primary" id="btn-pay-submit" onclick="executePayment()">确认支付</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container"></div>
+
+    <script>
+        // Global User Auth Initializer
+        let currentBalance = 0;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const userId = localStorage.getItem('impeccable_user');
+            const userName = localStorage.getItem('impeccable_user_name') || userId;
+            if(!userId) { window.location.href = 'login.html'; return; }
+            document.getElementById('user-display-name').innerText = userName;
+            document.getElementById('user-avatar-letter').innerText = userName.charAt(0).toUpperCase();
+            loadCredits(userId);
+        });
+
+        async function loadCredits(userId) {
+            const response = await fetch(`/api/credits?userId=${encodeURIComponent(userId)}`);
+            const data = await response.json();
+            if (!response.ok || !data.success) return;
+            currentBalance = data.balance;
+            renderCreditBalance();
+            renderTransactions(data.transactions || []);
+        }
+
+        function renderCreditBalance() {
+            document.getElementById('main-credit-balance').innerHTML = `${currentBalance} <span style="font-size: var(--text-body); color: var(--color-text-secondary); font-weight: normal;">点积分</span>`;
+            document.getElementById('nav-credit-balance').innerHTML = `${currentBalance} <span style="font-size: var(--text-small); color: var(--color-text-secondary); font-weight: normal;">点</span>`;
+        }
+
+        function reasonText(reason) {
+            if (reason === 'initial_grant') return '新用户初始算力';
+            if (reason === 'unlock_image') return '高清原图解锁';
+            if (reason && reason.startsWith('topup_')) return '算力补充充值';
+            return reason || '积分变动';
+        }
+
+        function renderTransactions(transactions) {
+            const list = document.getElementById('transaction-list');
+            if (!transactions.length) {
+                list.innerHTML = '<div class="card-ghost" style="color: var(--color-text-secondary);">暂无流水记录</div>';
+                return;
+            }
+            list.innerHTML = transactions.map(txn => {
+                const sign = txn.amount > 0 ? '+' : '';
+                const color = txn.amount > 0 ? 'var(--color-status-success)' : 'var(--color-text-primary)';
+                const timeStr = new Date(txn.created_at).toLocaleString('zh-CN', { hour12: false });
+                return `
+                    <div class="card-ghost flex-row justify-between align-center mb-sm">
+                        <div>
+                            <div style="font-weight: var(--weight-medium);">${reasonText(txn.reason)}</div>
+                            <div style="font-size: var(--text-small); color: var(--color-text-secondary);">${timeStr}</div>
+                        </div>
+                        <div style="font-weight: var(--weight-semibold); color: ${color};">${sign}${txn.amount} 点</div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function executeLogout() {
+            localStorage.removeItem('impeccable_user'); window.location.href = 'index.html';
+        }
+        function toggleSidebar() {
+            const sidebar = document.getElementById('dashboard-sidebar');
+            const grid = document.getElementById('dash-grid');
+            if (sidebar.style.opacity === '0') {
+                sidebar.style.opacity = '1'; setTimeout(() => sidebar.style.display = 'flex', 10); grid.style.gridTemplateColumns = '240px 1fr';
+            } else {
+                sidebar.style.opacity = '0'; setTimeout(() => sidebar.style.display = 'none', 200); grid.style.gridTemplateColumns = '0px 1fr';
+            }
+        }
+
+        // --- Topup Modal Logic (充值弹窗逻辑) ---
+        let selectedPoints = 50;
+        let selectedPrice = 39.9;
+        let selectedMethod = 'wechat';
+
+        /** 打开充值配置面板 */
+        function openTopupModal() {
+            const modal = document.getElementById('topup-modal');
+            modal.classList.add('open');
+        }
+
+        /** 关闭充值弹窗，并恢复按钮状态 */
+        function closeTopupModal() {
+            const modal = document.getElementById('topup-modal');
+            modal.classList.remove('open');
+            document.getElementById('btn-pay-submit').innerText = "确认支付";
+            document.getElementById('btn-pay-submit').disabled = false;
+        }
+
+        /**
+         * 选中算力购买卡片
+         * @param {HTMLElement} element - 触发点击的 DOM 卡片节点
+         * @param {number} points - 购买的算力值
+         * @param {number} price - 消耗人民币
+         */
+        function selectPlan(element, points, price) {
+            document.querySelectorAll('.plan-card').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            selectedPoints = points;
+            selectedPrice = price;
+            document.getElementById('checkout-total').innerText = `¥${price.toFixed(2)}`;
+        }
+
+        /**
+         * 切换支付环境（微信或支付宝）
+         * @param {string} method - 'wechat' 或 'alipay'
+         */
+        function selectPayMethod(method) {
+            document.getElementById('pay-wechat').classList.remove('selected');
+            document.getElementById('pay-alipay').classList.remove('selected');
+            document.getElementById(`pay-${method}`).classList.add('selected');
+            selectedMethod = method;
+        }
+
+        /**
+         * 模拟真实的向网关请求支付操作
+         * 内置了随时间推迟的状态栏变化，以及 20% 的付款失败情况模拟测试
+         */
+        function executePayment() {
+            const btn = document.getElementById('btn-pay-submit');
+            btn.disabled = true;
+            btn.innerText = "网络请求中...";
+
+            // Mocking payment integration status
+            setTimeout(() => {
+                btn.innerText = "唤起收银台...";
+                
+                setTimeout(() => {
+                    // Randomly simulate success or failure (20% failure rate)
+                    const isSuccess = Math.random() > 0.2;
+                    
+                    if(isSuccess) {
+                        showToast(`支付成功！已充值 ${selectedPoints} 积分`, 'success');
+                        
+                        fetch('/api/credits/topup', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                userId: localStorage.getItem('impeccable_user') || 'anonymous',
+                                amount: selectedPoints,
+                                method: selectedMethod
+                            })
+                        }).then(response => response.json()).then(data => {
+                            if (data.success) {
+                                currentBalance = data.balance;
+                                renderCreditBalance();
+                                loadCredits(localStorage.getItem('impeccable_user') || 'anonymous');
+                            }
+                        });
+                        
+                        // Add to log
+                        const list = document.getElementById('transaction-list');
+                        const timeStr = new Date().toLocaleString('zh-CN', { hour12: false });
+                        const methodStr = selectedMethod === 'wechat' ? "微信" : "支付宝";
+                        
+                        const newLog = document.createElement('div');
+                        newLog.className = "card-ghost flex-row justify-between align-center mb-sm";
+                        newLog.innerHTML = `
+                            <div>
+                                <div style="font-weight: var(--weight-medium);">算力补充充值 (${methodStr}支付)</div>
+                                <div style="font-size: var(--text-small); color: var(--color-text-secondary);">${timeStr}</div>
+                            </div>
+                            <div style="font-weight: var(--weight-semibold); color: var(--color-status-success);">+${selectedPoints} 点</div>
+                        `;
+                        list.insertBefore(newLog, list.firstChild);
+                        
+                        closeTopupModal();
+                    } else {
+                        showToast(`支付失败或已取消订单，请重新尝试`, 'error');
+                        btn.disabled = false;
+                        btn.innerText = "重新发起支付";
+                    }
+                }, 1500);
+            }, 800);
+        }
+
+        // Global Toast Logic
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            // Icon
+            const icon = type === 'success' ? '✓' : '✕';
+            
+            toast.innerHTML = `
+                <span>${message}</span>
+                <span style="font-weight: bold; margin-left: var(--space-16);">${icon}</span>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Destruct gracefully
+            setTimeout(() => {
+                toast.style.animation = 'fadeOut 0.3s ease forwards';
+                setTimeout(() => {
+                    if (container.contains(toast)) { container.removeChild(toast); }
+                }, 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

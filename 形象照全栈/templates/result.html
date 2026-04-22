@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生成预览确认 - AI 职业形象照</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="/static/css/system.css">
+    <link rel="stylesheet" href="/static/css/layout.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+
+    <style>
+        /* Toolbar Sticky underneath nav */
+        .result-toolbar {
+            position: sticky;
+            top: 64px;
+            z-index: 40;
+            background-color: var(--color-surface-pure);
+            border-bottom: 1px solid var(--color-border-subtle);
+            padding: var(--space-16) 0;
+            transition: all 0.3s ease;
+        }
+
+        .filter-scroll {
+            display: flex;
+            gap: var(--space-8);
+            overflow-x: auto;
+            scrollbar-width: none; 
+        }
+        .filter-scroll::-webkit-scrollbar { display: none; }
+
+        .filter-tag {
+            white-space: nowrap;
+            padding: var(--space-8) var(--space-16);
+            border-radius: var(--radius-full);
+            background-color: var(--color-surface-subtle);
+            color: var(--color-text-secondary);
+            font-size: var(--text-small);
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .filter-tag.active {
+            background-color: var(--color-text-primary);
+            color: var(--color-surface-pure);
+        }
+
+        /* Result Grid */
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: var(--space-24);
+            padding: var(--space-32) 0;
+        }
+
+        .result-card {
+            position: relative;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            background-color: var(--color-surface-subtle);
+            aspect-ratio: 3/4;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .result-img-mock {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.6) 100%);
+            display: flex;
+            align-items: flex-end;
+            padding: var(--space-16);
+            position: relative;
+        }
+
+        .result-photo {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: saturate(1.04) contrast(1.03);
+        }
+
+        .result-label {
+            color: #fff;
+            font-size: var(--text-small);
+            font-weight: var(--weight-medium);
+            z-index: 10; /* Above watermark */
+        }
+
+        /* --- WATERMARK SYSTEM --- */
+        .watermark-layer {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none; /* Let clicks pass through */
+            z-index: 5;
+            background-image: repeating-linear-gradient(
+                -45deg,
+                rgba(255, 255, 255, 0.1),
+                rgba(255, 255, 255, 0.1) 20px,
+                transparent 20px,
+                transparent 40px
+            );
+        }
+        
+        .watermark-text {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 2rem;
+            font-weight: 700;
+            transform: rotate(-30deg);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            user-select: none;
+            backdrop-filter: blur(2px);
+            padding: 10px 20px;
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+        }
+
+        .security-banner {
+            background: linear-gradient(to right, oklch(0.96 0.02 260), oklch(0.98 0.01 260));
+            border: 1px solid var(--color-border-strong);
+            padding: var(--space-16) var(--space-24);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-24);
+            margin-top: var(--space-24);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* --- LIGHTBOX MODAL --- */
+        .lightbox-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            display: none; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        .lightbox-overlay.open { display: flex; opacity: 1; }
+        
+        .lightbox-content {
+            display: flex; flex-direction: column; align-items: center; gap: var(--space-24);
+            max-width: 90vw; max-height: 90vh;
+            transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .lightbox-overlay.open .lightbox-content { transform: scale(1); }
+        
+        .lightbox-img-wrapper {
+            position: relative;
+            border-radius: var(--radius-lg); overflow: hidden;
+            background-color: var(--color-surface-subtle);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+        
+        /* 模拟大图尺寸 */
+        .lightbox-img-mock {
+            width: 400px; height: 533px; display: flex; align-items: flex-end; padding: var(--space-24);
+            background: linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.6) 100%);
+            position: relative;
+        }
+
+        .lightbox-photo {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .lightbox-actions { display: flex; gap: var(--space-16); flex-wrap: wrap; justify-content: center; }
+        .close-lightbox {
+            position: absolute; top: var(--space-24); right: var(--space-32);
+            font-size: 2.5rem; color: white; cursor: pointer; opacity: 0.7; transition: opacity 0.2s;
+            z-index: 10000;
+        }
+        .close-lightbox:hover { opacity: 1; }
+
+        @media (max-width: 768px) {
+            .result-grid { grid-template-columns: repeat(2, 1fr); gap: var(--space-12); }
+            .security-banner { flex-direction: column; align-items: stretch; text-align: left; }
+            .watermark-text { font-size: 1.2rem; }
+            .lightbox-img-mock { width: 85vw; height: 113vw; }
+            .lightbox-actions { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="header-sticky" style="height: 64px; display: flex; align-items: center; border-bottom: none;">
+        <div class="container flex-row justify-between w-100" style="width: 100%;">
+            <a href="index.html" style="font-weight: var(--weight-semibold); font-size: 1.1rem; color: var(--color-text-primary); text-decoration: none;">Auralis<span style="color:var(--color-text-secondary); margin-left: 6px; font-size: .82em; letter-spacing: .08em;">曜临</span></a>
+            
+            <!-- Unlocked Actions Area -->
+            <div class="result-nav-actions" id="unlocked-nav-actions" style="display: none; align-items: center; gap: var(--space-8);">
+            <!-- Dashboard Link -->
+            <button class="btn btn-ghost" style="padding: 6px 12px; font-size: 14px;" onclick="window.location.href='dashboard.html'">进入控制台</button>
+            
+            <!-- Download Dropdown -->
+            <div style="position: relative; display: inline-block;" class="download-dropdown-container">
+                <button class="btn btn-primary" style="padding: 6px 12px; font-size: 14px;" onclick="toggleDownloadMenu()">
+                    下载图片 ▾
+                </button>
+                <div id="download-menu" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 8px; background: white; border: 1px solid var(--color-border-subtle); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); width: 200px; z-index: 100; flex-direction: column; overflow: hidden;">
+                    <a href="#" class="dropdown-item" onclick="downloadCurrentImage()" style="padding: 12px 16px; display: block; text-decoration: none; color: var(--color-text-primary); border-bottom: 1px solid var(--color-border-subtle); font-size: 14px;">下载高清原图</a>
+                    <a href="dashboard.html" class="dropdown-item" style="padding: 12px 16px; display: block; text-decoration: none; color: var(--color-text-primary); font-size: 14px;">回到形象库</a>
+                </div>
+            </div>
+        </div>
+        </div>
+    </nav>
+
+    <style>
+        .dropdown-item:hover { background-color: var(--color-surface-subtle); }
+    </style>
+
+    <script>
+        function toggleDownloadMenu() {
+            const menu = document.getElementById('download-menu');
+            if (menu.style.display === 'none') {
+                menu.style.display = 'flex';
+            } else {
+                menu.style.display = 'none';
+            }
+        }
+
+        function downloadCurrentImage() {
+            const image = batchImages[0];
+            if (!image || !image.url) {
+                alert('还没有可下载的图片。');
+                return;
+            }
+            const link = document.createElement('a');
+            link.href = image.url;
+            link.download = `${image.label || '职业形象照'}.jpg`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        }
+    </script>
+
+    <main class="container mb-xl">
+        
+        <!-- Preview Protection Banner -->
+        <div class="security-banner" id="security-banner">
+            <div>
+                <h3 class="mb-sm" style="font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                    <span style="color: var(--color-status-warning);">🔒</span> 安全预览模式
+                </h3>
+                <p style="margin: 0; font-size: var(--text-small); color: var(--color-text-secondary); line-height: 1.6;">
+                    正在为您呈现带安全水印的初稿。如果您对结果满意，点击解锁扣除算力；如果对妆容或风格不满意，您还有 
+                    <strong style="color: var(--color-text-primary);" id="retry-count">2</strong> 次免费重新重绘的机会。
+                </p>
+            </div>
+            <div class="flex-row gap-sm">
+                <button class="btn btn-ghost" onclick="requestRegenerate()" id="btn-regen">不满意，重抽一次</button>
+                <button class="btn btn-primary" onclick="unlockAssets()" style="background-color: var(--color-text-primary);">满意！扣除算力并解锁高清原图</button>
+            </div>
+        </div>
+
+        <div class="flex-row justify-between align-center" style="margin-top: var(--space-48);">
+            <h1 style="font-size: var(--text-h3);" id="gallery-title">职业形象照预览</h1>
+            <span style="font-size: var(--text-small); color: var(--color-text-tertiary);" id="gallery-sub">仅供风格与轮廓确认</span>
+        </div>
+
+        <div class="result-grid" id="result-grid">
+            <p style="color: var(--color-text-secondary);">正在读取生成结果...</p>
+        </div>
+
+    </main>
+
+    <!-- Lightbox Modal Viewer -->
+    <div class="lightbox-overlay" id="lightbox">
+        <div class="close-lightbox" onclick="closeLightbox()">✕</div>
+        <div class="lightbox-content">
+            <div class="lightbox-img-wrapper">
+                <div id="lightbox-watermark" class="watermark-layer"><div class="watermark-text" style="font-size: 3rem;">预览试看</div></div>
+                <div id="lightbox-img" class="lightbox-img-mock">
+                    <img id="lightbox-photo" class="lightbox-photo" alt="">
+                    <span class="result-label" id="lightbox-img-label" style="font-size: 1.2rem;">经典商务浅灰底</span>
+                </div>
+            </div>
+            
+            <div class="lightbox-actions" id="lightbox-locked-actions">
+                <span style="color: rgba(255,255,255,0.7); font-size: var(--text-small); text-align: center;">请在主界面解锁权限后，开启单张原图下载与 GIF 导出功能。</span>
+            </div>
+            
+            <div class="lightbox-actions" id="lightbox-unlocked-actions" style="display: none;">
+                <button class="btn btn-primary" onclick="downloadCurrentImage()">下载高清原图</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 用户剩余重绘次数
+        let retries = 2;
+
+        // 获取当前 URL 参数上的 batchId（数据库主键）
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentBatchId = urlParams.get('batchId');
+
+        // 全局资产锁定状态：由本地数据库驱动初始化
+        let isAssetsUnlocked = false;
+        let batchImages = [];
+        
+        // 核心挂载：页面初始化时检测数据库里这条记录是不是已经买过了！
+        document.addEventListener('DOMContentLoaded', loadBatch);
+
+        async function loadBatch() {
+            if (!currentBatchId) {
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/batches/${currentBatchId}`);
+                const data = await response.json();
+                if (!response.ok || !data.success) throw new Error(data.error || '无法读取生成结果。');
+
+                batchImages = data.batch.images || [];
+                isAssetsUnlocked = data.batch.status === 'unlocked';
+                renderResultGrid();
+
+                if (isAssetsUnlocked) {
+                    executeUnlockUI();
+                }
+            } catch (error) {
+                const cachedAssets = JSON.parse(localStorage.getItem('impeccable_assets')) || [];
+                const cached = cachedAssets.find(a => a.id === currentBatchId);
+                batchImages = cached && cached.images ? cached.images : [];
+                renderResultGrid();
+                if (!batchImages.length) {
+                    document.getElementById('result-grid').innerHTML = `<p style="color: var(--color-status-error);">${error.message}</p>`;
+                }
+            }
+        }
+
+        function renderResultGrid() {
+            const grid = document.getElementById('result-grid');
+            if (!batchImages.length) return;
+            grid.innerHTML = batchImages.map(image => `
+                <div class="result-card" onclick="openLightbox('${image.label}', '${image.url}')" style="cursor: pointer;">
+                    <div class="result-img-mock">
+                        <img class="result-photo" src="${image.url}" alt="${image.label}">
+                        <div class="watermark-layer"><div class="watermark-text">预览试看</div></div>
+                        <span class="result-label">${image.label}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        /**
+         * 触发免费重绘逻辑
+         * 当用户对当前这批生成结果不满意时调用。
+         * 会拦截防刷规则（次数扣除），并回退到重新生成动画。
+         */
+        function requestRegenerate() {
+            if (retries > 0) {
+                const conf = confirm(`重绘将会完全丢弃这一批结果，根据你上一步的上传参数重新在底层流转一次。\n\n你还剩 ${retries} 次机会。确认要丢弃并重绘吗？`);
+                if (conf) {
+                    retries--;
+                    document.getElementById('retry-count').innerText = retries;
+                    window.location.href = 'generating.html'; 
+                }
+            } else {
+                alert("您的免费重绘资源已触达阈值。\n\n如对当前大模型结果极度不满意或遭遇了系统 Bug，您可即刻在主控制台发起 【联系人工客服】 请求退避回款，或者电邮至 support@auralis.ai 让工程师定点修缮。");
+            }
+        }
+
+        /**
+         * 解锁资产核心逻辑 (破除水印)
+         * 用户确认扣除算力后的前端防伪装逻辑演示，利用纯 CSS 动画将遮罩层“打碎”。
+         */
+        async function unlockAssets() {
+            const conf = confirm("解除水印将消耗你的资产余额 (1 点积分) 获取授权，是否继续？");
+            if (conf) {
+                if (currentBatchId) {
+                    const userId = localStorage.getItem('impeccable_user') || 'anonymous';
+                    const response = await fetch(`/api/batches/${currentBatchId}/unlock`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId })
+                    });
+                    const data = await response.json();
+                    if (!response.ok || !data.success) {
+                        alert(data.error || '解锁失败。');
+                        return;
+                    }
+                    localStorage.setItem('impeccable_credit_balance', String(data.balance));
+
+                    let assets = JSON.parse(localStorage.getItem('impeccable_assets')) || [];
+                    const index = assets.findIndex(a => a.id === currentBatchId);
+                    if (index > -1) {
+                        assets[index].status = 'unlocked';
+                        localStorage.setItem('impeccable_assets', JSON.stringify(assets));
+                    }
+                }
+
+                // 更新前端内存锁定状态
+                isAssetsUnlocked = true;
+
+                // 执行防盗水印剥离动效与文字替换
+                executeUnlockUI();
+            }
+        }
+
+        // 把 UI 层面的变换抽离出来，以便页面直接重载时复用
+        function executeUnlockUI() {
+                // UI Magic: Shatter watermarks and alter interface mode
+                const watermarks = document.querySelectorAll('.watermark-layer');
+                watermarks.forEach(wm => {
+                    wm.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                    wm.style.opacity = '0';
+                    wm.style.transform = 'scale(1.5)';
+                    setTimeout(() => wm.remove(), 600); // 彻底移出 DOM 节点，完成物理打碎
+                });
+
+                // 更新前端内存锁定状态
+                isAssetsUnlocked = true;
+
+                // Transform Text UI
+                document.getElementById('security-banner').innerHTML = `
+                    <div class="flex-row align-center justify-between w-100" style="width:100%;">
+                        <div style="display:flex; align-items:center; gap: 12px;">
+                            <span style="font-size:24px;">🎉</span>
+                            <div>
+                                <h3 class="mb-sm" style="font-size: 1.1rem; color: var(--color-status-success);">水印已完全解除，资产所属权已为您锁定。</h3>
+                                <p style="margin: 0; font-size: var(--text-small); color: var(--color-text-secondary);">现在可以查看、下载这张高清职业形象照，也可以在形象库里随时找回。</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('security-banner').style.borderColor = "var(--color-status-success)";
+
+                document.getElementById('gallery-title').innerText = "您的绝佳职业形象";
+                document.getElementById('gallery-sub').innerText = "点击图片进入查看模式";
+                
+                // Show right-top actions (开放下载区域)
+                // 这里我们把 ID 抓取并设定为 Flex
+                const navActions = document.getElementById('unlocked-nav-actions');
+                if(navActions) navActions.style.display = 'flex';
+        }
+
+        /**
+         * 捕获图片缩略图点击，启动看图 Lightbox（大屏检视模式）
+         * 若此时资产状态为未解锁 (isAssetsUnlocked=false)，则强制显示超级水印大图及锁定提示。
+         * 否则开放大尺寸清图与各项细分导出按钮。
+         */
+        function openLightbox(bgLabel, imageUrl) {
+            const lb = document.getElementById('lightbox');
+            const lbPhoto = document.getElementById('lightbox-photo');
+            const lbLabel = document.getElementById('lightbox-img-label');
+            const lbWatermark = document.getElementById('lightbox-watermark');
+            
+            // 数据装载
+            lbPhoto.src = imageUrl;
+            lbPhoto.alt = bgLabel;
+            lbLabel.innerText = bgLabel;
+            
+            // 系统状态自适应 (有锁防盗状态 vs 彻底放行开放状态)
+            if (isAssetsUnlocked) {
+                lbWatermark.style.display = 'none';
+                document.getElementById('lightbox-locked-actions').style.display = 'none';
+                document.getElementById('lightbox-unlocked-actions').style.display = 'flex';
+            } else {
+                lbWatermark.style.display = 'flex';
+                document.getElementById('lightbox-locked-actions').style.display = 'block';
+                document.getElementById('lightbox-unlocked-actions').style.display = 'none';
+            }
+            
+            lb.classList.add('open');
+        }
+
+        /**
+         * 退出 Lightbox 模式
+         */
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('open');
+        }
+    </script>
+</body>
+</html>

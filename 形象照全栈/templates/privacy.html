@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>隐私权利与照片保护说明 - Auralis 曜临</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="/static/css/system.css">
+    <link rel="stylesheet" href="/static/css/layout.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+
+    <style>
+        .article-layout {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: var(--space-64) var(--space-24);
+        }
+
+        .prose h2 {
+            margin-top: var(--space-48);
+            margin-bottom: var(--space-16);
+            font-size: var(--text-h3);
+            border-bottom: 1px solid var(--color-border-subtle);
+            padding-bottom: var(--space-8);
+        }
+
+        .prose p {
+            margin-bottom: var(--space-16);
+            color: var(--color-text-secondary);
+        }
+        
+        .trust-badge {
+            background-color: oklch(from var(--color-status-success) 0.98 c h);
+            border: 1px solid oklch(from var(--color-status-success) 0.9 c h);
+            color: var(--color-text-primary);
+            padding: var(--space-16);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-32);
+            font-size: var(--text-small);
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="header-sticky" style="height: 64px; display: flex; align-items: center; border-bottom: 1px solid var(--color-border-subtle);">
+        <div class="container flex-row justify-between w-100" style="width: 100%;">
+            <a href="index.html" style="font-weight: var(--weight-semibold); font-size: 1.1rem; color: var(--color-text-primary);">Auralis<span style="color:var(--color-text-secondary); margin-left: 6px; font-size: .82em; letter-spacing: .08em;">曜临</span></a>
+            <a href="login.html" class="btn btn-ghost" style="padding: 6px 12px; font-size: 14px;">返回登录</a>
+        </div>
+    </nav>
+
+    <main class="article-layout">
+        <h1 class="mb-sm" style="font-size: var(--text-h1);">个人隐私与照片保护说明</h1>
+        <p class="mb-lg">最后更新于：2026年4月</p>
+
+        <div class="trust-badge">
+            <strong>核心承诺：</strong> 您的脸庞属于您自己。我们的唯一业务是提供高质感图像渲染服务，而不是兜售或收集人脸数据。
+        </div>
+
+        <div class="prose">
+            <h2>一、 您的原始照片会保存多久？</h2>
+            <p><strong>自动清除机制：</strong> 我们采用“用完即焚”策略。为了保证您的结果能够正常渲染，您上传的原始排版自拍照（含手机摄像头实时拍摄的图像）仅会在云端缓冲服务器停留最长 <strong>24小时</strong>。24小时后，所有原始图像数据将被物理覆写且不可恢复。</p>
+            <p>生成的成品形象照将在您的账户下保留 30 天，以便您随时下载。超过该时间系统将自动释放空间。</p>
+
+            <h2>二、 我能否主动要求提前删除？</h2>
+            <p><strong>绝对可以，且立即生效。</strong> 登录您的个人中心，在“隐私控制”面板点击“一键清除所有特征与相册数据”。点击后，不仅图片本体，对应的缓冲特征向量也会在 10 秒内从全部服务器集群中彻底擦除。</p>
+
+            <h2>三、 我的相片会被拿来训练 AI 模型吗？</h2>
+            <p><strong>绝对不会。</strong> 我们使用的是基于隔离沙箱的预训练推理模型。您的数据输入只参与当次的前馈推理（Render Inference），没有任何训练闭环。我们明令禁止将用户私有资产用于底层模型的权重更新和训练迭代。</p>
+
+            <h2>四、 数据加密与传输</h2>
+            <p>所有通讯，尤其是浏览器调用您本地摄像头并通过 WebRTC 或 HTTP 传输的数据，均强制使用 TLS/SSL 加密协议。我们采用了最严苛的防网络嗅探设计。</p>
+
+            <h2>五、 客服与合规专员联系方式</h2>
+            <p>如果您对本平台的数据保存界限仍有疑虑，或需要主张数据携带、彻底遗忘等权利，请径直联系我们的隐私合规专员：</p>
+            <p>邮箱：privacy-legal@auralis-example.ai</p>
+        </div>
+    </main>
+
+</body>
+</html>

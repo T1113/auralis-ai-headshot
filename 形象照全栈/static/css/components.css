@@ -1,0 +1,346 @@
+/* ==========================================================================
+   COMPONENTS.CSS
+   Buttons, Cards, Inputs, Tags, and Badges
+   ========================================================================== */
+
+/* --- Buttons --- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-8);
+  font-family: var(--font-sans);
+  font-weight: var(--weight-medium);
+  font-size: var(--text-body);
+  border-radius: var(--radius-md);
+  padding: var(--space-12) var(--space-24);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); /* Natural easing */
+  border: none;
+  text-decoration: none;
+  line-height: 1;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-primary {
+  background-color: var(--color-brand-primary);
+  color: var(--color-text-inverse);
+}
+
+.btn-primary:hover {
+  background-color: var(--color-brand-hover);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border-strong);
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-surface-elevated);
+}
+
+.btn-ghost {
+  background-color: transparent;
+  color: var(--color-text-secondary);
+}
+
+.btn-ghost:hover {
+  color: var(--color-text-primary);
+  background-color: var(--color-surface-subtle);
+}
+
+/* Base button full width on mobile */
+@media (max-width: 768px) {
+  .btn-mobile-full {
+    width: 100%;
+  }
+  
+  /* Per PRD: Mobile fixed bottom CTA container */
+  .fixed-bottom-cta {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: var(--space-16);
+    background-color: var(--color-surface-pure);
+    border-top: 1px solid var(--color-border-subtle);
+    z-index: 100;
+  }
+}
+
+/* --- Cards --- */
+/* Do not nest cards inside cards. Do not use AI color stripe borders. */
+.card {
+  background-color: var(--color-surface-pure);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-24);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.card:hover {
+  border-color: var(--color-border-strong);
+}
+
+.card-ghost {
+  background-color: var(--color-surface-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-24);
+}
+
+/* --- Forms & Inputs --- */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  margin-bottom: var(--space-16);
+}
+
+label {
+  font-weight: var(--weight-medium);
+  font-size: var(--text-small);
+  color: var(--color-text-primary);
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea {
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  color: var(--color-text-primary);
+  background-color: var(--color-surface-pure);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  padding: var(--space-12) var(--space-16);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input:focus,
+textarea:focus {
+  border-color: var(--color-brand-primary);
+  box-shadow: 0 0 0 3px oklch(from var(--color-brand-primary) l c h / 0.1);
+}
+
+/* Forms Accessibility / Error States */
+.input-error {
+  border-color: var(--color-status-error) !important;
+}
+
+.error-text {
+  font-size: var(--text-small);
+  color: var(--color-status-error);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+/* --- Badges / Tags --- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: var(--weight-medium);
+  padding: var(--space-4) var(--space-8);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface-elevated);
+  color: var(--color-text-secondary);
+}
+
+.badge-success {
+  background-color: oklch(from var(--color-status-success) 0.95 c h);
+  color: var(--color-status-success);
+}
+
+/* --- Floating Form Inputs (Google Material Style) --- */
+.form-floating {
+  position: relative;
+  margin-bottom: var(--space-16);
+  width: 100%;
+}
+.form-floating input {
+  width: 100%;
+  height: 56px;
+  padding: 24px 16px 8px 16px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-pure);
+  font-size: var(--text-body);
+  transition: all 0.2s ease;
+}
+.form-floating input:focus {
+  border-color: #0b57d0;
+  box-shadow: 0 0 0 1px #0b57d0;
+  outline: none;
+}
+.form-floating label {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: var(--text-body);
+  color: var(--color-text-secondary);
+  pointer-events: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  background-color: transparent;
+  padding: 0 4px;
+}
+.form-floating input:focus ~ label,
+.form-floating input:not(:placeholder-shown) ~ label {
+  top: 14px;
+  font-size: 0.75rem;
+  color: #0b57d0;
+}
+.form-floating input:not(:placeholder-shown):not(:focus) ~ label {
+  color: var(--color-text-secondary);
+}
+
+/* --- Modals (e.g. Sales Form) --- */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background-color: rgba(0,0,0,0.5);
+  z-index: 1000;
+  align-items: center; justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.modal-overlay.active {
+  display: flex;
+  opacity: 1;
+}
+.modal-card {
+  background-color: var(--color-surface-pure);
+  border-radius: var(--radius-lg);
+  width: 100%; max-width: 480px;
+  padding: var(--space-32);
+  position: relative;
+  transform: translateY(20px);
+  transition: transform 0.2s ease;
+}
+.modal-overlay.active .modal-card {
+  transform: translateY(0);
+}
+.modal-close {
+  position: absolute;
+  top: var(--space-16); right: var(--space-16);
+  background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--color-text-tertiary);
+}
+.modal-close:hover { color: var(--color-text-primary); }
+
+/* --- Dashboard Specific Components --- */
+.user-dropdown-container {
+  position: relative;
+  display: inline-block;
+}
+.user-dropdown-menu {
+  position: absolute;
+  top: calc(100% + var(--space-8));
+  right: 0;
+  background-color: var(--color-surface-pure);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  width: 260px;
+  padding: var(--space-16);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 1000;
+}
+.user-dropdown-container:hover .user-dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+.dropdown-divider {
+  height: 1px;
+  background-color: var(--color-border-subtle);
+  margin: var(--space-12) 0;
+}
+
+/* --- Dashboard Specific CSS --- */
+.dashboard-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: var(--space-48);
+  min-height: calc(100vh - 64px);
+}
+.sidebar {
+  border-right: 1px solid var(--color-border-subtle);
+  padding: var(--space-32) var(--space-24) var(--space-32) 0;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  padding: var(--space-12) var(--space-16);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+  margin-bottom: var(--space-8);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.nav-item:hover {
+  background-color: var(--color-surface-subtle);
+  color: var(--color-text-primary);
+  transform: translateX(4px);
+}
+.nav-item.active {
+  background-color: var(--color-text-primary);
+  color: var(--color-surface-pure);
+  box-shadow: var(--shadow-md);
+}
+.content-area {
+  padding: var(--space-48) 0;
+}
+.empty-dash {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: var(--space-64); border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-lg); background-color: var(--color-surface-subtle);
+}
+@media (max-width: 768px) {
+  .dashboard-layout { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .content-area { padding: var(--space-24) 0; }
+}
+
+/* --- Attire Configurator Swatches --- */
+.swatch-container {
+  display: flex;
+  gap: var(--space-12);
+  flex-wrap: wrap;
+}
+.color-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border-strong);
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+}
+.color-swatch:hover {
+  transform: scale(1.15);
+  box-shadow: var(--shadow-sm);
+}
+.color-swatch.selected::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border: 2px solid var(--color-text-primary);
+  border-radius: 50%;
+}

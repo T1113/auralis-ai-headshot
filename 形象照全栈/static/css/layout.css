@@ -1,0 +1,100 @@
+/* ==========================================================================
+   LAYOUT.CSS
+   12-column Grid & Layout Architecture
+   ========================================================================== */
+
+/* The main container wrapper (Max 1200px, 12 columns) */
+.container {
+  width: 100%;
+  max-width: 1280px; /* Gives some breathing room around 1200px content */
+  margin: 0 auto;
+  padding: 0 var(--space-24);
+}
+
+/* The core grid. Used for top-level structural layout */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--space-24);
+}
+
+/* Sub-layouts using flex or auto-fit grid instead of strict 12 cols */
+.grid-auto {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-24);
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-row {
+  display: flex;
+  align-items: center;
+}
+
+.justify-between { justify-content: space-between; }
+.justify-center { justify-content: center; }
+.align-start { align-items: flex-start; }
+.align-center { align-items: center; }
+
+/* Desktop Hero specific: Left 5 cols, Right 7 cols */
+.col-5 { grid-column: span 5; }
+.col-7 { grid-column: span 7; }
+.col-12 { grid-column: span 12; }
+.col-4 { grid-column: span 4; }
+.col-3 { grid-column: span 3; }
+
+/* Vertical Spacing Utility Classes */
+.section {
+  padding-top: var(--space-96);
+  padding-bottom: var(--space-96);
+}
+
+.gap-sm { gap: var(--space-8); }
+.gap-md { gap: var(--space-16); }
+.gap-lg { gap: var(--space-32); }
+.gap-xl { gap: var(--space-64); }
+
+.mb-sm { margin-bottom: var(--space-8); }
+.mb-md { margin-bottom: var(--space-16); }
+.mb-lg { margin-bottom: var(--space-32); }
+.mb-xl { margin-bottom: var(--space-64); }
+
+/* Sticky Header */
+.header-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background-color: color-mix(in oklch, var(--color-surface-pure) 90%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+/* ==========================================================================
+   MOBILE RESPONSIVE BREAKPOINTS (Max 390px base as per PRD)
+   ========================================================================== */
+@media (max-width: 768px) {
+  /* Collapse all grids to single column on mobile */
+  .grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-32);
+  }
+  
+  .col-5, .col-7, .col-4, .col-3 {
+    grid-column: span 1;
+  }
+
+  /* Tighter padding on mobile */
+  .section {
+    padding-top: var(--space-64);
+    padding-bottom: var(--space-64);
+  }
+  
+  .container {
+    padding: 0 var(--space-16);
+  }
+}

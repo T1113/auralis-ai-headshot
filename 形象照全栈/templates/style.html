@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>服装精调 - AI 职业形象照</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="/static/css/system.css">
+    <link rel="stylesheet" href="/static/css/layout.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+
+    <style>
+        /* Specific Page Layout: Left Nav, Right Content */
+        .workspace-layout {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            gap: var(--space-48);
+            min-height: calc(100vh - 80px);
+            align-items: start;
+            padding-top: var(--space-48);
+            padding-bottom: var(--space-48);
+        }
+
+        .steps-nav {
+            position: sticky;
+            top: 120px;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-12);
+            padding: var(--space-12) 0;
+            color: var(--color-text-tertiary);
+            font-weight: var(--weight-medium);
+        }
+
+        .step-item.active {
+            color: var(--color-text-primary);
+        }
+        
+        .step-item.done {
+            color: var(--color-text-secondary);
+        }
+
+        .step-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: var(--radius-full);
+            background-color: var(--color-surface-elevated);
+            font-size: var(--text-small);
+        }
+
+        .step-item.active .step-number {
+            background-color: var(--color-text-primary);
+            color: var(--color-surface-pure);
+        }
+        
+        .step-item.done .step-number {
+            background-color: transparent; border: 1px solid var(--color-text-secondary); color: var(--color-text-secondary);
+        }
+
+        /* Style Selection Cards */
+        .style-card {
+            border: 2px solid var(--color-surface-elevated);
+            border-radius: var(--radius-md);
+            padding: var(--space-16);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .style-card:hover { border-color: var(--color-border-strong); }
+        .style-card.selected { border-color: var(--color-text-primary); background-color: color-mix(in oklch, var(--color-surface-elevated) 80%, var(--color-text-primary)); box-shadow: var(--shadow-sm); }
+        .style-icon { font-size: 2rem; margin-bottom: var(--space-8); }
+        
+        @media (max-width: 768px) {
+            .workspace-layout {
+                grid-template-columns: 1fr;
+                gap: var(--space-24);
+                padding-top: var(--space-16);
+                padding-bottom: 90px;
+            }
+            .steps-nav {
+                display: flex;
+                overflow-x: auto;
+                position: relative;
+                top: 0;
+                padding-bottom: var(--space-8);
+                border-bottom: 1px solid var(--color-border-subtle);
+            }
+            .step-item {
+                flex-shrink: 0;
+                padding: var(--space-8) var(--space-12);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Simple Header inside app -->
+    <nav class="header-sticky" style="height: 64px; display: flex; align-items: center; border-bottom: 1px solid var(--color-border-subtle);">
+        <div class="container flex-row justify-between w-100" style="width: 100%;">
+            <a href="index.html" style="font-weight: var(--weight-semibold); font-size: 1.1rem; color: var(--color-text-primary); text-decoration: none;">Auralis<span style="color:var(--color-text-secondary); margin-left: 6px; font-size: .82em; letter-spacing: .08em;">曜临</span></a>
+            <span style="font-size: var(--text-small); color: var(--color-text-tertiary);">状态：正在调整穿搭</span>
+        </div>
+    </nav>
+
+    <div class="container workspace-layout">
+        
+        <!-- Left: Steps Nav -->
+        <aside class="steps-nav">
+            <div class="step-item done" onclick="window.location.href='upload.html'" style="cursor: pointer; transition: all 0.3s ease;">
+                <div class="step-number" style="transition: all 0.3s ease;">✓</div>
+                <span>上传照片</span>
+            </div>
+            <div class="step-item active" onclick="window.location.href='style.html'" style="cursor: pointer; transition: all 0.3s ease;">
+                <div class="step-number" style="transition: all 0.3s ease;">2</div>
+                <span>精选服装</span>
+            </div>
+            <div class="step-item" onclick="window.location.href='checkout.html'" style="cursor: pointer; transition: all 0.3s ease;">
+                <div class="step-number" style="transition: all 0.3s ease;">3</div>
+                <span>确认信息</span>
+            </div>
+            <div class="step-item" onclick="window.location.href='generating.html'" style="cursor: pointer; transition: all 0.3s ease;">
+                <div class="step-number" style="transition: all 0.3s ease;">4</div>
+                <span>结果生成</span>
+            </div>
+        </aside>
+
+        <!-- Right: Main Content -->
+        <main class="content-area">
+            <div class="mb-xl">
+                <h1 class="mb-sm" style="font-size: var(--text-h2);">定制你的职场形象</h1>
+                <p style="margin: 0; color: var(--color-text-secondary);">我们深知正式着装对职业形象的影响。请在此级联选取你所中意的服饰规格。</p>
+            </div>
+
+            <!-- The Crop Toggle Component -->
+            <div class="mb-xl">
+                <h3 class="mb-md" style="font-size: var(--text-h3);">第一步：选择画幅比重</h3>
+                <div class="grid-auto style-grid" style="grid-template-columns: 1fr 1fr; gap: var(--space-16);">
+                    <div class="style-card selected" id="crop-half" onclick="setCrop('half')" data-group="crop">
+                        <div class="style-icon">👤</div>
+                        <div style="font-weight: var(--weight-medium)">经典半身胸像</div>
+                        <div style="font-size: var(--text-small); color: var(--color-text-secondary); margin-top: 4px;">聚焦面部发丝与表情，无视下半身</div>
+                    </div>
+                    <div class="style-card" id="crop-full" onclick="setCrop('full')" data-group="crop">
+                        <div class="style-icon">🧍</div>
+                        <div style="font-weight: var(--weight-medium)">完整全身展现</div>
+                        <div style="font-size: var(--text-small); color: var(--color-text-secondary); margin-top: 4px;">展示完整体态修长感与皮鞋搭配</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Suit Jacket -->
+            <div class="mb-xl">
+                <h3 class="mb-md" style="font-size: var(--text-h3);">外套设计选项</h3>
+                <div class="grid-auto style-grid" style="grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--space-16); margin-bottom: var(--space-16);">
+                    <div class="style-card selected" onclick="selectCard(this, 'jacket')" data-group="jacket">标准单排扣西装</div>
+                    <div class="style-card" onclick="selectCard(this, 'jacket')" data-group="jacket">美式复古双排扣</div>
+                    <div class="style-card" onclick="selectCard(this, 'jacket')" data-group="jacket">无领极简版修身</div>
+                    <div class="style-card" onclick="selectCard(this, 'jacket')" data-group="jacket">仅衬衫(无外套)</div>
+                </div>
+                <div class="flex-row align-center gap-md">
+                    <span style="font-size: var(--text-small); color: var(--color-text-secondary); font-weight: var(--weight-medium);">外套系统配色:</span>
+                    <div class="swatch-container">
+                        <div class="color-swatch selected" style="background-color: #171b26;" onclick="selectSwatch(this, 'jacket')" data-color="navy"></div>
+                        <div class="color-swatch" style="background-color: #434c5e;" onclick="selectSwatch(this, 'jacket')" data-color="charcoal"></div>
+                        <div class="color-swatch" style="background-color: #d8dee9;" onclick="selectSwatch(this, 'jacket')" data-color="ivory"></div>
+                        <div class="color-swatch" style="background-color: #927f6a;" onclick="selectSwatch(this, 'jacket')" data-color="khaki"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shirt -->
+            <div class="mb-xl">
+                <h3 class="mb-md" style="font-size: var(--text-h3);">内搭领口选项</h3>
+                <div class="grid-auto style-grid" style="grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--space-16); margin-bottom: var(--space-16);">
+                    <div class="style-card selected" onclick="selectCard(this, 'shirt')" data-group="shirt">标准温莎领衬衫</div>
+                    <div class="style-card" onclick="selectCard(this, 'shirt')" data-group="shirt">立领商务衬衫</div>
+                    <div class="style-card" onclick="selectCard(this, 'shirt')" data-group="shirt">法式开襟白衬衣</div>
+                    <div class="style-card" onclick="selectCard(this, 'shirt')" data-group="shirt">高领修身毛衣</div>
+                </div>
+                <div class="flex-row align-center gap-md">
+                    <span style="font-size: var(--text-small); color: var(--color-text-secondary); font-weight: var(--weight-medium);">内搭系统配色:</span>
+                    <div class="swatch-container">
+                        <div class="color-swatch selected" style="background-color: #ffffff;" onclick="selectSwatch(this, 'shirt')" data-color="white"></div>
+                        <div class="color-swatch" style="background-color: #cad8e5;" onclick="selectSwatch(this, 'shirt')" data-color="lightblue"></div>
+                        <div class="color-swatch" style="background-color: #1a1a1a;" onclick="selectSwatch(this, 'shirt')" data-color="black"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pants (Hidden by default) -->
+            <div class="mb-xl config-fullbody" style="display: none; animation: slideDown 0.3s ease forwards;">
+                <h3 class="mb-md" style="font-size: var(--text-h3);">下装剪裁匹配</h3>
+                <div class="grid-auto style-grid" style="grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--space-16); margin-bottom: var(--space-16);">
+                    <div class="style-card selected" onclick="selectCard(this, 'pants')" data-group="pants">修身意式九分裤</div>
+                    <div class="style-card" onclick="selectCard(this, 'pants')" data-group="pants">标准微直筒西裤</div>
+                    <div class="style-card" onclick="selectCard(this, 'pants')" data-group="pants">阔腿垂感落地裤</div>
+                </div>
+                <div class="flex-row align-center gap-md">
+                    <span style="font-size: var(--text-small); color: var(--color-text-secondary); font-weight: var(--weight-medium);">下装系统配色:</span>
+                    <div class="swatch-container">
+                        <div class="color-swatch selected" style="background-color: #171b26;" onclick="selectSwatch(this, 'pants')" data-color="navy"></div>
+                        <div class="color-swatch" style="background-color: #434c5e;" onclick="selectSwatch(this, 'pants')" data-color="charcoal"></div>
+                        <div class="color-swatch" style="background-color: #d8dee9;" onclick="selectSwatch(this, 'pants')" data-color="ivory"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shoes (Hidden by default) -->
+            <div class="mb-xl config-fullbody" style="display: none; animation: slideDown 0.3s ease forwards;">
+                <h3 class="mb-md" style="font-size: var(--text-h3);">鞋履搭配逻辑</h3>
+                <div class="grid-auto style-grid" style="grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--space-16); margin-bottom: var(--space-16);">
+                    <div class="style-card selected" onclick="selectCard(this, 'shoes')" data-group="shoes">牛津皮鞋 (Oxford)</div>
+                    <div class="style-card" onclick="selectCard(this, 'shoes')" data-group="shoes">休闲乐福鞋 (Loafers)</div>
+                    <div class="style-card" onclick="selectCard(this, 'shoes')" data-group="shoes">黑色亮面高跟鞋</div>
+                    <div class="style-card" onclick="selectCard(this, 'shoes')" data-group="shoes">小白鞋 (Smart Casual)</div>
+                </div>
+                <div class="flex-row align-center gap-md">
+                    <span style="font-size: var(--text-small); color: var(--color-text-secondary); font-weight: var(--weight-medium);">鞋履系统配色:</span>
+                    <div class="swatch-container">
+                        <div class="color-swatch selected" style="background-color: #2b170c;" onclick="selectSwatch(this, 'shoes')" data-color="brown"></div>
+                        <div class="color-swatch" style="background-color: #111111;" onclick="selectSwatch(this, 'shoes')" data-color="black"></div>
+                        <div class="color-swatch" style="background-color: #f7f7f7;" onclick="selectSwatch(this, 'shoes')" data-color="white"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom CTA Mobile/Desktop -->
+            <div class="fixed-bottom-cta" style="margin-top: var(--space-64);">
+                <div class="flex-row justify-between align-center" style="max-width: 1200px; margin: auto;">
+                    <a href="upload.html" class="btn btn-ghost">返回上传步骤</a>
+                    <button class="btn btn-primary" onclick="continueToCheckout()">定妆并验证订单</button>
+                </div>
+            </div>
+            <div style="height: 100px;" class="desktop-only"></div>
+        </main>
+    </div>
+
+    <!-- Animation keyframes for rendering cascade layout -->
+    <style>
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+
+    <script>
+        // Auth Guard check
+        document.addEventListener('DOMContentLoaded', () => {
+            if(!localStorage.getItem('impeccable_user')) { window.location.href = 'login.html'; }
+        });
+
+        /**
+         * 通用卡片选择器：管理服装样式的单选互斥逻辑
+         * @param {HTMLElement} element - 被点击的卡片 DOM 节点
+         * @param {string} groupName - 服装部位分组名称（如 'jacket', 'shirt'）
+         */
+        function selectCard(element, groupName) {
+            // 取消同组所有卡片的选中状态
+            const cards = document.querySelectorAll(`.style-card[data-group="${groupName}"]`);
+            cards.forEach(c => c.classList.remove('selected'));
+            // 激活当前点击的卡片
+            element.classList.add('selected');
+            persistStyleConfig();
+        }
+
+        /**
+         * 通用色卡选择器：管理颜色阵列的焦点与高亮逻辑
+         * @param {HTMLElement} element - 被点击的色卡 DOM 节点
+         * @param {string} groupName - 对应部位的配色组名
+         */
+        function selectSwatch(element, groupName) {
+            // 定位到当前卡片所在的容器，并清除同级高亮
+            const container = element.parentElement;
+            const swatches = container.querySelectorAll('.color-swatch');
+            swatches.forEach(c => c.classList.remove('selected'));
+            // 激活当前颜色
+            element.classList.add('selected');
+            persistStyleConfig();
+        }
+
+        /**
+         * 级联构图引擎：核心业务逻辑
+         * 负责在选择“全身”或“半身”时，动态伸缩下半身的物理装配（裤子、鞋履）
+         * @param {string} cropType - 选取类型，'half' 为半身胸像，'full' 为全身照
+         */
+        function setCrop(cropType) {
+            // 1. 切换界面顶部的卡片状态指示器
+            document.getElementById('crop-half').classList.remove('selected');
+            document.getElementById('crop-full').classList.remove('selected');
+            document.getElementById(`crop-${cropType}`).classList.add('selected');
+
+            // 2. DOM 级联映射：遍历所有携带 config-fullbody 标记的下半身模块进行显隐操作
+            const fullbodyElements = document.querySelectorAll('.config-fullbody');
+            fullbodyElements.forEach(el => {
+                if (cropType === 'full') {
+                    el.style.display = 'block'; // 利用 CSS Keyframes 顺势触发展开动画
+                } else {
+                    el.style.display = 'none';
+                }
+            });
+            persistStyleConfig();
+        }
+
+        function selectedText(groupName) {
+            const selected = document.querySelector(`.style-card[data-group="${groupName}"].selected`);
+            return selected ? selected.innerText.trim() : '';
+        }
+
+        function selectedColor(groupName) {
+            const selected = document.querySelector(`.color-swatch.selected[onclick*="'${groupName}'"]`);
+            return selected ? (selected.dataset.color || selected.style.backgroundColor) : '';
+        }
+
+        function persistStyleConfig() {
+            const config = {
+                crop: document.getElementById('crop-full').classList.contains('selected') ? 'full' : 'half',
+                jacket: selectedText('jacket'),
+                jacketColor: selectedColor('jacket'),
+                shirt: selectedText('shirt'),
+                shirtColor: selectedColor('shirt'),
+                pants: selectedText('pants'),
+                pantsColor: selectedColor('pants'),
+                shoes: selectedText('shoes'),
+                shoesColor: selectedColor('shoes'),
+            };
+            localStorage.setItem('impeccable_style_config', JSON.stringify(config));
+        }
+
+        function continueToCheckout() {
+            const ids = JSON.parse(localStorage.getItem('impeccable_uploaded_photo_ids') || '[]');
+            if (!ids.length) {
+                alert('请先上传至少 1 张通过校验的照片。');
+                window.location.href = 'upload.html';
+                return;
+            }
+            persistStyleConfig();
+            window.location.href = 'checkout.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', persistStyleConfig);
+    </script>
+</body>
+</html>

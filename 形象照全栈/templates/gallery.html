@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例图库 - Auralis 曜临</title>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/system.css">
+    <link rel="stylesheet" href="/static/css/layout.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+    <style>
+        .gallery-grid {
+            columns: 3 300px;
+            gap: var(--space-24);
+            padding-top: var(--space-32);
+        }
+        .gallery-item {
+            break-inside: avoid;
+            margin-bottom: var(--space-24);
+            border-radius: var(--radius-lg);
+            background-color: var(--color-surface-elevated);
+            position: relative;
+            overflow: hidden;
+            aspect-ratio: 3/4; /* default fallback */
+        }
+        .gallery-item:nth-child(2n) { aspect-ratio: 4/5; }
+        .gallery-item:nth-child(3n) { aspect-ratio: 1/1; }
+        .gallery-item:nth-child(5n) { aspect-ratio: 3/4; }
+        
+        .gallery-overlay {
+            position: absolute;
+            bottom: 0; left: 0; width: 100%;
+            padding: var(--space-24) var(--space-16) var(--space-16);
+            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+            color: #fff;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .gallery-item:hover .gallery-overlay { opacity: 1; }
+    </style>
+</head>
+<body>
+    <nav class="header-sticky" style="height: 64px; display: flex; align-items: center; border-bottom: 1px solid var(--color-border-subtle);">
+        <div class="container flex-row justify-between w-100" style="width: 100%;">
+            <a href="index.html" style="font-weight: var(--weight-semibold); font-size: 1.1rem; color: var(--color-text-primary);">Auralis<span style="color:var(--color-text-secondary); margin-left: 6px; font-size: .82em; letter-spacing: .08em;">曜临</span></a>
+            <a href="upload.html" class="btn btn-primary" style="padding: 6px 12px; font-size: 14px;">获得同款照片</a>
+        </div>
+    </nav>
+    <main class="container mb-xl" style="padding-top: var(--space-64);">
+        <h1 class="mb-sm" style="font-size: var(--text-h1); text-align: center;">探索高管与精英的风貌</h1>
+        <p class="mb-xl" style="text-align: center; color: var(--color-text-secondary);">所有展示案例均已获得原始模特书面商用演示权授权。</p>
+        
+        <div class="gallery-grid">
+            <!-- Render 6 mock items -->
+            <div class="gallery-item" style="background-color: #2a2a2a;"><div class="gallery-overlay"><span style="font-size:14px;">投资合伙人质感</span></div></div>
+            <div class="gallery-item" style="background-color: #444;"><div class="gallery-overlay"><span style="font-size:14px;">医疗研究员</span></div></div>
+            <div class="gallery-item" style="background-color: #d1d1d1;"><div class="gallery-overlay"><span style="font-size:14px;">初创公司 CEO</span></div></div>
+            <div class="gallery-item" style="background-color: #333;"><div class="gallery-overlay"><span style="font-size:14px;">领英标准白领装</span></div></div>
+            <div class="gallery-item" style="background-color: #a8a8a8;"><div class="gallery-overlay"><span style="font-size:14px;">自然亲和力</span></div></div>
+            <div class="gallery-item" style="background-color: #1a1a1a;"><div class="gallery-overlay"><span style="font-size:14px;">年度会议海报级</span></div></div>
+        </div>
+    </main>
+</body>
+</html>

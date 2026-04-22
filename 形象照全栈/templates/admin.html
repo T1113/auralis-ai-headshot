@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高管数据中心 - AI 职业形象照</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="/static/css/system.css">
+    <link rel="stylesheet" href="/static/css/layout.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+
+    <style>
+        body { background-color: var(--color-surface-subtle); }
+        .admin-nav {
+            background-color: #111;
+            color: #fff;
+            padding: var(--space-16) 0;
+            position: sticky; top: 0; z-index: 100;
+        }
+        .admin-nav a { color: #fff; text-decoration: none; font-weight: var(--weight-medium); }
+        
+        .metric-card {
+            background: var(--color-surface-pure);
+            border: 1px solid var(--color-border-subtle);
+            border-radius: var(--radius-lg);
+            padding: var(--space-24);
+            box-shadow: var(--shadow-sm);
+        }
+        .metric-value { font-size: 2.5rem; font-weight: 700; color: var(--color-text-primary); margin: var(--space-8) 0; }
+        .metric-label { font-size: var(--text-small); color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 1px; }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--color-surface-pure);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+        .data-table th, .data-table td {
+            padding: var(--space-16);
+            text-align: left;
+            border-bottom: 1px solid var(--color-border-subtle);
+            font-size: var(--text-small);
+        }
+        .data-table th { background-color: var(--color-surface-subtle); font-weight: var(--weight-semibold); color: var(--color-text-secondary); }
+        .data-table tr:hover { background-color: oklch(0.98 0 0); }
+        .data-table tr:last-child td { border-bottom: none; }
+    </style>
+</head>
+<body>
+
+    <nav class="admin-nav">
+        <div class="container flex-row justify-between align-center">
+            <div class="flex-row align-center gap-md">
+                <span style="font-size: 1.2rem;">★</span>
+                <span style="font-weight: 600; font-size: 1.1rem; letter-spacing: 1px;">Auralis 曜临 - 运营指挥中心</span>
+            </div>
+            <a href="dashboard.html" class="btn btn-ghost" style="color: #fff; border: 1px solid rgba(255,255,255,0.3);">退出上帝视角</a>
+        </div>
+    </nav>
+
+    <main class="container mb-xl" style="margin-top: var(--space-32);">
+        
+        <h2 class="mb-lg" style="font-size: var(--text-h3);">平台实时数据洞察</h2>
+        
+        <!-- Metrics Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-24); margin-bottom: var(--space-48);">
+            <div class="metric-card">
+                <div class="metric-label">注册用户总池</div>
+                <div class="metric-value" id="metric-users">0</div>
+                <div style="font-size: 12px; color: var(--color-status-success);">↑ 较昨日新增活跃</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">GPU 渲染 4K 原图总数</div>
+                <div class="metric-value" id="metric-images">0</div>
+                <div style="font-size: 12px; color: var(--color-text-tertiary);">包含试看废案底稿</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">预估资产提货转化 (¥)</div>
+                <div class="metric-value" id="metric-revenue">¥ 0.0</div>
+                <div style="font-size: 12px; color: var(--color-text-tertiary);">模型：每发解锁预估 9.9 元</div>
+            </div>
+        </div>
+
+        <div class="flex-row justify-between align-end mb-md">
+            <h2 style="font-size: var(--text-h3); margin:0;">用户 CRM 库</h2>
+            <span style="font-size: 12px; color: var(--color-text-tertiary);">实时抓取 LocalStorage (impeccable_users_db)</span>
+        </div>
+        <div style="overflow-x: auto; margin-bottom: var(--space-48);">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>底层流水 ID</th>
+                        <th>账户名称</th>
+                        <th>授权邮箱</th>
+                        <th>初次踏入平台时间</th>
+                    </tr>
+                </thead>
+                <tbody id="user-table-body">
+                    <!-- Dynamic rendering -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="flex-row justify-between align-end mb-md">
+            <h2 style="font-size: var(--text-h3); margin:0;">AI 生成作业日志 (Jobs)</h2>
+            <span style="font-size: 12px; color: var(--color-text-tertiary);">实时抓取 LocalStorage (impeccable_assets)</span>
+        </div>
+        <div style="overflow-x: auto;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>作业批次号</th>
+                        <th>节点时间</th>
+                        <th>输出规格</th>
+                        <th>资产归属状态</th>
+                        <th>超管操作</th>
+                    </tr>
+                </thead>
+                <tbody id="asset-table-body">
+                    <!-- Dynamic rendering -->
+                </tbody>
+            </table>
+        </div>
+
+    <div class="flex-row justify-between align-end mb-md" style="margin-top: 48px;">
+        <h2 style="font-size: var(--text-h3); margin:0;">工单系统 (Help Desk)</h2>
+        <span id="active-chat-label" style="font-size: 12px; color: var(--color-status-info);">请从左侧选择会话</span>
+    </div>
+    
+    <div style="display: flex; gap: var(--space-24); background: var(--color-surface-pure); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-lg); overflow: hidden; height: 500px; box-shadow: var(--shadow-sm); margin-bottom: var(--space-48);">
+        <!-- Active User List -->
+        <div style="width: 250px; border-right: 1px solid var(--color-border-subtle); display: flex; flex-direction: column;">
+            <div style="padding: 16px; background: var(--color-surface-subtle); font-weight: 500; font-size: 14px;">收件箱 / 在线会话列表</div>
+            <div id="admin-chat-users" style="flex: 1; overflow-y: auto;">
+                <!-- user rows -->
+            </div>
+        </div>
+        
+        <!-- Messages -->
+        <div style="flex: 1; display: flex; flex-direction: column;">
+            <div id="admin-chat-body" style="flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; background-color: var(--color-surface-subtle);">
+                <div style="text-align:center; color: var(--color-text-tertiary); margin-top: 50px;">👈 选择一个用户开始对话</div>
+            </div>
+            
+            <div style="display: flex; border-top: 1px solid var(--color-border-subtle);">
+                <input type="text" id="admin-chat-input" disabled style="flex: 1; border: none; padding: 16px; outline: none; font-size: 14px;" placeholder="输入回复..." onkeypress="if(event.key==='Enter') sendAdminChatMsg()">
+                <button id="admin-chat-send" disabled style="background: var(--color-text-primary); color: #fff; border: none; font-weight: 500; cursor: pointer; padding: 0 24px;" onclick="sendAdminChatMsg()">即时反馈</button>
+            </div>
+        </div>
+    </div>
+
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAdminData();
+        });
+
+        let activeAdminUserId = null;
+        let adminPollTimer = null;
+
+        function loadAdminData() {
+            const users = JSON.parse(localStorage.getItem('impeccable_users_db')) || [];
+            const assets = JSON.parse(localStorage.getItem('impeccable_assets')) || [];
+            
+            document.getElementById('metric-users').innerText = users.length;
+            let unlockedAssets = assets.filter(a => a.status === 'unlocked');
+            document.getElementById('metric-images').innerText = assets.reduce((sum, asset) => sum + (asset.count || 1), 0).toLocaleString();
+            document.getElementById('metric-revenue').innerText = "¥ " + (unlockedAssets.length * 9.9).toFixed(1);
+
+            const userTable = document.getElementById('user-table-body');
+            if (users.length === 0) {
+                userTable.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--color-text-tertiary);">暂无注册用户数据</td></tr>';
+            } else {
+                users.slice().reverse().forEach(u => {
+                    let tr = document.createElement('tr');
+                    let rd = new Date(u.registerTime);
+                    tr.innerHTML = `
+                        <td style="font-family: monospace; color: var(--color-text-secondary);">${u.id}</td>
+                        <td style="font-weight: 600;">${u.name}</td>
+                        <td>${u.email}</td>
+                        <td>${rd.toLocaleDateString()} ${rd.toLocaleTimeString()}</td>
+                    `;
+                    userTable.appendChild(tr);
+                });
+            }
+
+            const assetTable = document.getElementById('asset-table-body');
+            if (assets.length === 0) {
+                assetTable.innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--color-text-tertiary);">暂无任何底层生成记录</td></tr>';
+            } else {
+                assets.slice().reverse().forEach(a => {
+                    let tr = document.createElement('tr');
+                    let stamp = new Date(a.timestamp);
+                    let statusHtml = a.status === 'unlocked' 
+                        ? '<span class="badge badge-success">已提货付款</span>' 
+                        : '<span class="badge error-text" style="background-color: var(--color-surface-subtle); color: var(--color-text-tertiary); border: 1px solid var(--color-border-subtle);">防盗初稿挂起</span>';
+                    
+                    tr.innerHTML = `
+                        <td style="font-family: monospace; color: var(--color-text-secondary);">${a.id}</td>
+                        <td>${stamp.toLocaleDateString()} ${stamp.toLocaleTimeString()}</td>
+                        <td>${a.count || 1} 张职业形象照</td>
+                        <td>${statusHtml}</td>
+                        <td>
+                            <a href="result.html?batchId=${a.id}" target="_blank" style="color: #0b57d0; text-decoration: none; font-weight: 500;">👁 穿透窥探</a>
+                        </td>
+                    `;
+                    assetTable.appendChild(tr);
+                });
+            }
+
+            // Start polling chat users globally
+            pollAdminChatUsers();
+        }
+
+        async function pollAdminChatUsers() {
+            try {
+                const res = await fetch('/api/chat/users');
+                const userIds = await res.json();
+                const list = document.getElementById('admin-chat-users');
+                list.innerHTML = '';
+                userIds.forEach(uid => {
+                    const div = document.createElement('div');
+                    div.style.padding = '12px 16px'; div.style.borderBottom = '1px solid var(--color-border-subtle)';
+                    div.style.cursor = 'pointer'; div.style.fontSize = '14px';
+                    if (uid === activeAdminUserId) {
+                        div.style.backgroundColor = 'var(--color-surface-elevated)';
+                        div.style.fontWeight = '600';
+                    }
+                    div.innerText = '👤 用户: ' + uid;
+                    div.onclick = () => selectAdminChatUser(uid);
+                    list.appendChild(div);
+                });
+            } catch(e) {}
+            setTimeout(pollAdminChatUsers, 5000);
+        }
+
+        function selectAdminChatUser(uid) {
+            activeAdminUserId = uid;
+            document.getElementById('active-chat-label').innerText = '当前回话对象: ' + uid;
+            document.getElementById('admin-chat-input').disabled = false;
+            document.getElementById('admin-chat-send').disabled = false;
+            clearTimeout(adminPollTimer);
+            pollAdminChatMessages();
+        }
+
+        async function pollAdminChatMessages() {
+            if(!activeAdminUserId) return;
+            try {
+                const res = await fetch('/api/chat?userId=' + activeAdminUserId);
+                const msgs = await res.json();
+                const body = document.getElementById('admin-chat-body');
+                body.innerHTML = '';
+                msgs.forEach(m => {
+                    const div = document.createElement('div');
+                    div.style.maxWidth = '80%'; div.style.padding = '8px 12px'; div.style.borderRadius = '12px';
+                    div.style.fontSize = '14px'; div.style.lineHeight = '1.4';
+                    
+                    if (m.is_admin === 1) { // Admin msg
+                        div.style.background = '#0b57d0'; div.style.color = '#fff';
+                        div.style.alignSelf = 'flex-end'; div.style.borderBottomRightRadius = '4px';
+                    } else { // User msg
+                        div.style.background = '#fff'; div.style.color = 'var(--color-text-primary)';
+                        div.style.border = '1px solid var(--color-border-subtle)';
+                        div.style.alignSelf = 'flex-start'; div.style.borderBottomLeftRadius = '4px';
+                    }
+                    div.innerText = m.content;
+                    body.appendChild(div);
+                });
+                body.scrollTop = body.scrollHeight;
+            } catch(e) {}
+            adminPollTimer = setTimeout(pollAdminChatMessages, 2000); // fast polling
+        }
+
+        async function sendAdminChatMsg() {
+            if(!activeAdminUserId) return;
+            const input = document.getElementById('admin-chat-input');
+            const content = input.value.trim();
+            if(!content) return;
+            
+            input.value = '';
+            
+            // optimistic ui
+            const div = document.createElement('div');
+            div.style.maxWidth = '80%'; div.style.padding = '8px 12px'; div.style.borderRadius = '12px';
+            div.style.fontSize = '14px'; div.style.lineHeight = '1.4';
+            div.style.background = '#0b57d0'; div.style.color = '#fff';
+            div.style.alignSelf = 'flex-end'; div.style.borderBottomRightRadius = '4px';
+            div.innerText = content;
+            document.getElementById('admin-chat-body').appendChild(div);
+            document.getElementById('admin-chat-body').scrollTop = document.getElementById('admin-chat-body').scrollHeight;
+
+            await fetch('/api/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ userId: activeAdminUserId, isAdmin: 1, content: content })
+            });
+
+            clearTimeout(adminPollTimer);
+            pollAdminChatMessages();
+        }
+    </script>
+</body>
+</html>

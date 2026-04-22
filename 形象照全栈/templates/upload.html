@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>上传照片 - AI 职业形象照</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="/static/css/system.css">
+    <link rel="stylesheet" href="/static/css/layout.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+
+    <style>
+        /* Specific Page Layout: Left Nav, Right Content */
+        .workspace-layout {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            gap: var(--space-48);
+            min-height: calc(100vh - 80px);
+            align-items: start;
+            padding-top: var(--space-48);
+            padding-bottom: var(--space-48);
+        }
+
+        /* Steps Sidebar */
+        .steps-nav {
+            position: sticky;
+            top: 120px;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-12);
+            padding: var(--space-12) 0;
+            color: var(--color-text-tertiary);
+            font-weight: var(--weight-medium);
+        }
+
+        .step-item.active {
+            color: var(--color-text-primary);
+        }
+
+        .step-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: var(--radius-full);
+            background-color: var(--color-surface-elevated);
+            font-size: var(--text-small);
+        }
+
+        .step-item.active .step-number {
+            background-color: var(--color-text-primary);
+            color: var(--color-surface-pure);
+        }
+
+        /* Upload Zone */
+        .upload-zone {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-64) var(--space-24);
+            border: 2px dashed var(--color-border-strong);
+            border-radius: var(--radius-lg);
+            background-color: var(--color-surface-subtle);
+            text-align: center;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .upload-zone.dragover {
+            border-color: var(--color-text-primary);
+            background-color: color-mix(in oklch, var(--color-surface-elevated) 80%, var(--color-text-primary));
+        }
+
+        .upload-zone-icon {
+            font-size: 2.5rem;
+            color: var(--color-text-secondary);
+            margin-bottom: var(--space-16);
+        }
+
+        /* Guidance Cards */
+        .guidance-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-16);
+            margin-top: var(--space-32);
+        }
+
+        .guidance-card {
+            border-radius: var(--radius-md);
+            padding: var(--space-16);
+            font-size: var(--text-small);
+        }
+
+        .guidance-good { background-color: oklch(from var(--color-status-success) 0.98 c h); border: 1px solid oklch(from var(--color-status-success) 0.9 c h); }
+        .guidance-bad { background-color: oklch(from var(--color-status-error) 0.98 c h); border: 1px solid oklch(from var(--color-status-error) 0.9 c h); }
+
+        ul.check-list {
+            list-style: none;
+            padding: 0;
+            margin-top: var(--space-8);
+        }
+
+        ul.check-list li {
+            position: relative;
+            padding-left: var(--space-24);
+            margin-bottom: var(--space-4);
+            color: var(--color-text-secondary);
+        }
+
+        ul.check-list li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+        }
+        
+        ul.check-list.bad li::before {
+            content: "✕";
+        }
+
+        /* Camera Modal Overlay */
+        #camera-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: var(--color-surface-pure);
+            z-index: 9999;
+            flex-direction: column;
+        }
+        
+        #camera-modal.active {
+            display: flex;
+        }
+
+        .camera-header {
+            padding: var(--space-16) var(--space-24);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--color-border-subtle);
+        }
+
+        .camera-viewport {
+            flex: 1;
+            background-color: #111;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #video-element {
+            object-fit: cover;
+            width: 100%;
+            height: 100%;
+            max-width: 600px; /* Limit on Desktop */
+            border-radius: var(--radius-md);
+            transform: scaleX(-1); /* Mirror */
+        }
+        
+        #canvas-element {
+            display: none; /* Used for grabbing frames secretly */
+        }
+
+        .camera-controls {
+            padding: var(--space-24);
+            display: flex;
+            justify-content: center;
+            gap: var(--space-24);
+            border-top: 1px solid var(--color-border-subtle);
+        }
+
+        .camera-overlay-state {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: var(--color-surface-pure);
+            padding: var(--space-24);
+            border-radius: var(--radius-lg);
+            text-align: center;
+            box-shadow: var(--shadow-lg);
+            display: none;
+        }
+
+        /* Photo List */
+        .photo-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-16);
+            margin-top: var(--space-32);
+        }
+        
+        .photo-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-16);
+            padding: var(--space-12);
+            border: 1px solid var(--color-border-subtle);
+            border-radius: var(--radius-md);
+            background-color: var(--color-surface-pure);
+        }
+
+        .photo-thumb {
+            width: 64px;
+            height: 64px;
+            border-radius: var(--radius-sm);
+            object-fit: cover;
+            background-color: var(--color-surface-subtle);
+        }
+        
+        /* Mobile Breakpoints */
+        @media (max-width: 768px) {
+            .workspace-layout {
+                grid-template-columns: 1fr;
+                gap: var(--space-24);
+                padding-top: var(--space-16);
+                padding-bottom: 90px; /* Space for bottom CTA */
+            }
+            .steps-nav {
+                display: flex;
+                overflow-x: auto;
+                position: relative;
+                top: 0;
+                padding-bottom: var(--space-8);
+                border-bottom: 1px solid var(--color-border-subtle);
+            }
+            .step-item {
+                flex-shrink: 0;
+                padding: var(--space-8) var(--space-12);
+            }
+            .guidance-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Simple Header inside app -->
+    <nav class="header-sticky" style="height: 64px; display: flex; align-items: center; border-bottom: 1px solid var(--color-border-subtle);">
+        <div class="container flex-row justify-between w-100" style="width: 100%;">
+            <a href="index.html" style="font-weight: var(--weight-semibold); font-size: 1.1rem; color: var(--color-text-primary);">Auralis<span style="color:var(--color-text-secondary); margin-left: 6px; font-size: .82em; letter-spacing: .08em;">曜临</span></a>
+            <span style="font-size: var(--text-small); color: var(--color-text-tertiary);">草稿自动保存</span>
+        </div>
+    </nav>
+
+    <div class="container workspace-layout">
+        
+        <!-- Left: Steps Nav -->
+        <aside class="steps-nav">
+            <div class="step-item active" onclick="window.location.href='upload.html'" style="cursor: pointer; transition: all 0.3s ease;">
+                <div class="step-number" style="transition: all 0.3s ease;">1</div>
+                <span>上传照片</span>
+            </div>
+            <div class="step-item" onclick="window.location.href='style.html'" style="cursor: pointer; transition: all 0.3s ease;">
+                <div class="step-number" style="transition: all 0.3s ease;">2</div>
+                <span>选择风格</span>
+            </div>
+            <div class="step-item" onclick="window.location.href='checkout.html'" style="cursor: pointer; transition: all 0.3s ease;">
+                <div class="step-number" style="transition: all 0.3s ease;">3</div>
+                <span>确认信息</span>
+            </div>
+            <div class="step-item" onclick="window.location.href='generating.html'" style="cursor: pointer; transition: all 0.3s ease;">
+                <div class="step-number" style="transition: all 0.3s ease;">4</div>
+                <span>结果生成</span>
+            </div>
+        </aside>
+
+        <!-- Right: Main Content -->
+        <main class="content-area">
+            <div class="mb-lg">
+                <h1 class="mb-sm" style="font-size: var(--text-h2);">上传你的照片</h1>
+                <p style="margin: 0;">建议上传 1 到 5 张清晰、无遮挡、单人正脸自拍。</p>
+            </div>
+
+            <div id="generation-error-banner" style="display:none; margin-bottom: var(--space-24); padding: var(--space-16); border: 1px solid var(--color-status-error); border-radius: var(--radius-md); color: var(--color-status-error); background: oklch(from var(--color-status-error) 0.97 c h); font-size: var(--text-small); line-height: 1.6;"></div>
+
+            <!-- Upload Box (Empty State / Drag State) -->
+            <div class="upload-zone" id="upload-zone" style="transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
+                <div class="upload-zone-icon">📷</div>
+                <h3 class="mb-sm">拖拽照片到这里，或点击上传</h3>
+                <p class="mb-lg" style="font-size: var(--text-small);">支持 JPG, PNG, HEIC</p>
+                
+                <div class="flex-row gap-md" style="flex-wrap: wrap; justify-content: center;">
+                    <!-- Normal File Input (Hidden) -> Button forwards to it -->
+                    <input type="file" id="file-input" multiple accept="image/*,.heic" style="display: none;" />
+                    <button class="btn btn-secondary" onclick="document.getElementById('file-input').click()">从相册上传</button>
+                    
+                    <!-- WebRTC Camera Trigger -->
+                    <button class="btn btn-primary" id="btn-open-camera">打开摄像头拍照</button>
+                    
+                    <!-- Mobile Fallback Camera Trigger (Only visible logically on mobile OS, but we render for demo) -->
+                    <input type="file" id="mobile-camera-input" accept="image/*" capture="user" style="display: none;" />
+                </div>
+            </div>
+
+            <!-- Expand More UI (Shown only when list is populated) -->
+            <div id="add-more-zone" style="display: none; text-align: center; margin-top: var(--space-24);">
+                <button class="btn btn-ghost" onclick="document.getElementById('upload-zone').style.display='flex'; this.parentElement.style.display='none';"> ➜ 继续添加更多照片 (不超过5张) </button>
+            </div>
+
+            <!-- Guidance Cards -->
+            <div class="guidance-cards">
+                <div class="guidance-card guidance-good">
+                    <div style="font-weight: var(--weight-medium); color: var(--color-text-primary);">推荐照片</div>
+                    <ul class="check-list good">
+                        <li>单人、正脸</li>
+                        <li>光线自然明亮</li>
+                        <li>脸部轮廓清晰</li>
+                        <li>无墨镜无口罩</li>
+                    </ul>
+                </div>
+                <div class="guidance-card guidance-bad">
+                    <div style="font-weight: var(--weight-medium); color: var(--color-text-primary);">不推荐照片</div>
+                    <ul class="check-list bad">
+                        <li>多人合照</li>
+                        <li>强滤镜/严重美颜</li>
+                        <li>环境光线过暗</li>
+                        <li>侧脸角度过偏</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Uploaded Photos List (Dynamic) -->
+            <div class="photo-list" id="photo-list">
+                <!-- JS will inject .photo-item here -->
+            </div>
+
+            <!-- Bottom CTA Mobile/Desktop -->
+            <div class="fixed-bottom-cta">
+                <div class="flex-row justify-between align-center" style="max-width: 1200px; margin: auto;">
+                    <span style="font-size: var(--text-small); color: var(--color-text-secondary);" id="upload-counter">已添加 0 张照片</span>
+                    <button class="btn btn-primary" id="btn-next" disabled onclick="window.location.href='style.html'">下一步，选择风格</button>
+                </div>
+            </div>
+            <!-- Prevent overlap on desktop -->
+            <div style="height: 100px;" class="desktop-only"></div>
+        </main>
+    </div>
+
+    <!-- The WebRTC Camera Modal UI -->
+    <div id="camera-modal">
+        <div class="camera-header">
+            <h3 style="font-size: var(--text-body);">实时拍摄</h3>
+            <button class="btn btn-ghost" id="btn-close-camera" style="padding: var(--space-8);">关闭</button>
+        </div>
+        
+        <div class="camera-viewport">
+            <video id="video-element" autoplay playsinline></video>
+            <canvas id="canvas-element"></canvas>
+
+            <!-- Pre-Authorization Warning State -->
+            <div class="camera-overlay-state" id="camera-permission-state">
+                <h3 class="mb-sm">需要摄像头权限</h3>
+                <p class="mb-lg" style="font-size: var(--text-small);">请在弹出的提示中允许浏览器访问摄像头，<br>用于实时拍摄自拍照。</p>
+            </div>
+
+            <!-- DenIED Warning State -->
+            <div class="camera-overlay-state" id="camera-denied-state">
+                <h3 class="mb-sm" style="color: var(--color-status-error);">未获得摄像头权限</h3>
+                <p class="mb-lg" style="font-size: var(--text-small);">请在浏览器设置中开启相机权限后重试，<br>或者直接改用相册上传图片。</p>
+                <div class="flex-row gap-sm justify-center">
+                    <button class="btn btn-secondary" onclick="document.getElementById('mobile-camera-input').click()">调用系统相机</button>
+                    <button class="btn btn-ghost" id="btn-cancel-camera-err">取消</button>
+                </div>
+            </div>
+            
+            <!-- Result Preview Overlay -->
+            <div id="camera-preview-overlay" style="display: none; position: absolute; top:0; left:0; width:100%; height:100%; background: #000; align-items: center; justify-content: center;">
+                <img id="camera-preview-img" alt="拍照预览" style="max-width:100%; max-height:100%; border-radius: var(--radius-md);">
+            </div>
+        </div>
+
+        <div class="camera-controls">
+            <!-- Normal Mode -->
+            <div id="controls-capture" class="flex-row gap-md">
+                <button class="btn btn-primary" id="btn-snap" style="border-radius: var(--radius-full); width: 64px; height: 64px; padding: 0;">📸</button>
+            </div>
+            <!-- Preview Mode -->
+            <div id="controls-preview" class="flex-row gap-md" style="display: none;">
+                <button class="btn btn-ghost" id="btn-retake">重新拍摄</button>
+                <button class="btn btn-primary" id="btn-confirm-photo">确认使用</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attach separated logical Scripts -->
+    <!-- Attach separated logical Scripts -->
+    <script>
+        // Auth Guard & Nav Setup
+        document.addEventListener('DOMContentLoaded', () => {
+            if(!localStorage.getItem('impeccable_user')) { window.location.href = 'login.html'; }
+            const generationError = localStorage.getItem('impeccable_generation_error');
+            if (generationError) {
+                const banner = document.getElementById('generation-error-banner');
+                banner.innerText = `生成失败：${generationError}`;
+                banner.style.display = 'block';
+                localStorage.removeItem('impeccable_generation_error');
+            }
+        });
+    </script>
+    <script src="/static/js/uploader.js"></script>
+    <script src="/static/js/camera.js"></script>
+
+</body>
+</html>

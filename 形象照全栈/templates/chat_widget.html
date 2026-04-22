@@ -1,0 +1,118 @@
+<!-- Floating Chat Widget -->
+<style>
+.chat-widget {
+    position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+    font-family: var(--font-sans);
+}
+.chat-btn {
+    width: 56px; height: 56px; border-radius: 50%;
+    background-color: var(--color-text-primary); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; cursor: pointer; box-shadow: var(--shadow-lg);
+    transition: transform 0.2s;
+}
+.chat-btn:hover { transform: scale(1.05); }
+.chat-window {
+    position: absolute; bottom: 70px; right: 0;
+    width: 320px; height: 400px;
+    background: var(--color-surface-pure);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
+    display: none; flex-direction: column; overflow: hidden;
+}
+.chat-window.open { display: flex; }
+.chat-header {
+    background: var(--color-text-primary); color: var(--color-surface-pure);
+    padding: 16px; font-weight: 500; display: flex; justify-content: space-between; align-items: center;
+}
+.chat-body {
+    flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;
+    background-color: var(--color-surface-subtle);
+}
+.chat-msg {
+    max-width: 80%; padding: 8px 12px; border-radius: 12px; font-size: 14px; line-height: 1.4;
+}
+.chat-msg.self { background: #0b57d0; color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+.chat-msg.other { background: #fff; color: var(--color-text-primary); border: 1px solid var(--color-border-subtle); align-self: flex-start; border-bottom-left-radius: 4px; }
+.chat-footer {
+    display: flex; border-top: 1px solid var(--color-border-subtle);
+}
+.chat-input {
+    flex: 1; border: none; padding: 12px; outline: none; font-size: 14px;
+}
+.chat-send {
+    background: none; border: none; color: #0b57d0; font-weight: 500; cursor: pointer; padding: 0 16px;
+}
+</style>
+
+<div class="chat-widget">
+    <div class="chat-window" id="chatWindow">
+        <div class="chat-header">
+            联系客服中心 <span style="cursor:pointer;" onclick="toggleChat()">✕</span>
+        </div>
+        <div class="chat-body" id="chatBody"></div>
+        <div class="chat-footer">
+            <input type="text" id="chatInput" class="chat-input" placeholder="输入问题..." onkeypress="if(event.key==='Enter') sendChatMsg()">
+            <button class="chat-send" onclick="sendChatMsg()">发送</button>
+        </div>
+    </div>
+    <div class="chat-btn" onclick="toggleChat()">💬</div>
+</div>
+
+<script>
+    const chatUserId = localStorage.getItem('impeccable_user') || 'anonymous_' + Math.floor(Math.random()*1000);
+    
+    function toggleChat() {
+        const win = document.getElementById('chatWindow');
+        win.classList.toggle('open');
+        if (win.classList.contains('open')) {
+            pollChat();
+            // Scroll to bottom
+            const body = document.getElementById('chatBody');
+            body.scrollTop = body.scrollHeight;
+        }
+    }
+
+    async function sendChatMsg() {
+        const input = document.getElementById('chatInput');
+        const text = input.value.trim();
+        if(!text) return;
+        
+        input.value = '';
+        renderMsg(text, true); // optimistic ui
+
+        await fetch('/api/chat', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ userId: chatUserId, isAdmin: 0, content: text })
+        });
+        
+        pollChat(); // refresh
+    }
+
+    async function pollChat() {
+        if(!document.getElementById('chatWindow').classList.contains('open')) return;
+        try {
+            const res = await fetch('/api/chat?userId=' + chatUserId);
+            const messages = await res.json();
+            const body = document.getElementById('chatBody');
+            body.innerHTML = ''; // Re-render all for simplicity
+            if(messages.length === 0) {
+                body.innerHTML = '<div style="text-align:center; color:gray; font-size:12px; margin-top:20px;">系统已接通，你可以向客服留言。</div>';
+            } else {
+                messages.forEach(m => renderMsg(m.content, m.is_admin === 0));
+            }
+            body.scrollTop = body.scrollHeight;
+        } catch (e) {
+            console.error('Chat error', e);
+        }
+        setTimeout(pollChat, 3000); // Pool every 3s
+    }
+
+    function renderMsg(txt, isSelf) {
+        const div = document.createElement('div');
+        div.className = 'chat-msg ' + (isSelf ? 'self' : 'other');
+        div.innerText = txt;
+        document.getElementById('chatBody').appendChild(div);
+    }
+</script>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生成中 - AI 职业形象照</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="/static/css/system.css">
+    <link rel="stylesheet" href="/static/css/layout.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+
+    <style>
+        body, html { height: 100%; margin: 0; }
+        
+        .loader-page {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--color-surface-pure);
+            text-align: center;
+            padding: var(--space-24);
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            max-width: 400px;
+            height: 6px;
+            background-color: var(--color-surface-elevated);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+            margin: var(--space-32) 0 var(--space-16);
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--color-text-primary);
+            width: 0%;
+            transition: width 0.3s ease-out;
+            border-radius: var(--radius-full);
+        }
+
+        .status-text {
+            font-size: var(--text-body);
+            color: var(--color-text-secondary);
+            font-weight: var(--weight-medium);
+            height: 24px; /* fixed height for rotation */
+        }
+        
+        .time-text {
+            font-size: var(--text-small);
+            color: var(--color-text-tertiary);
+            margin-top: var(--space-8);
+        }
+
+        /* Subtle pulsating glow for aesthetic */
+        .pulse-core {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, oklch(0.9 0.02 260), oklch(0.95 0.01 260));
+            box-shadow: 0 0 0 0 rgba(0,0,0,0.05);
+            animation: pulse 2s infinite cubic-bezier(0.66, 0, 0, 1);
+            margin-bottom: var(--space-32);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        @keyframes pulse {
+            to {
+                box-shadow: 0 0 0 45px rgba(0,0,0,0);
+            }
+        }
+        
+        /* Bottom informational area */
+        .footer-tips {
+            position: absolute;
+            bottom: var(--space-48);
+            max-width: 600px;
+            font-size: var(--text-small);
+            color: var(--color-text-tertiary);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="loader-page">
+        <!-- Visual Anchor -->
+        <div class="pulse-core">✨</div>
+
+        <h1 class="mb-sm" style="font-size: var(--text-h2);">正在注入灵魂...</h1>
+        
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+
+        <div class="status-text" id="status-text">初始化安全连接</div>
+        <div class="time-text">预计还需要 2 分钟</div>
+
+        <div class="footer-tips">
+            <strong style="color: var(--color-text-secondary);">你知道吗？</strong><br>
+            在这个过程中，系统并不是在给你的照片“换脸”，而是利用光影重建算法，在保持你绝对骨相和毛发分布的同时，重塑摄影棚级的打光和服装质感，从而达到 100% 像本人的专业效果。这符合我们的隐私透明度承诺。
+        </div>
+    </div>
+
+    <script>
+        const statuses = [
+            "正在连接后端生成服务...",
+            "读取已上传的源照片队列...",
+            "应用商务求职摄影模板...",
+            "生成可预览的图片资产...",
+            "写入批次记录并校验结果...",
+            "组装图像网格，即将完成！"
+        ];
+        
+        const progressBar = document.getElementById('progress-bar');
+        const statusText = document.getElementById('status-text');
+        
+        let progress = 0;
+        let pIndex = 0;
+
+        let generationFinished = false;
+
+        async function runGeneration() {
+            const photoIds = JSON.parse(localStorage.getItem('impeccable_uploaded_photo_ids') || '[]');
+            const styleConfig = JSON.parse(localStorage.getItem('impeccable_style_config') || '{}');
+            const userId = localStorage.getItem('impeccable_user') || 'anonymous';
+            let clientRequestId = localStorage.getItem('impeccable_generation_request_id');
+            if (!clientRequestId) {
+                clientRequestId = `req_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+                localStorage.setItem('impeccable_generation_request_id', clientRequestId);
+            }
+
+            if (!photoIds.length) {
+                alert('请先上传至少 1 张照片。');
+                window.location.href = 'upload.html';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, photoIds, styleConfig, clientRequestId }),
+                });
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || '生成失败，请重试。');
+                }
+
+                let assets = JSON.parse(localStorage.getItem('impeccable_assets')) || [];
+                const newAsset = {
+                    id: data.batch.id,
+                    timestamp: new Date().getTime(),
+                    status: data.batch.status,
+                    count: data.batch.count,
+                    images: data.batch.images
+                };
+                assets = assets.filter(asset => asset.id !== newAsset.id);
+                assets.unshift(newAsset);
+                localStorage.setItem('impeccable_assets', JSON.stringify(assets));
+
+                generationFinished = true;
+                progress = 100;
+                progressBar.style.width = '100%';
+                statusText.innerText = statuses[statuses.length - 1];
+                setTimeout(() => window.location.href = `result.html?batchId=${newAsset.id}`, 500);
+            } catch (error) {
+                clearInterval(interval);
+                localStorage.setItem('impeccable_generation_error', error.message);
+                statusText.innerText = error.message;
+                statusText.style.color = 'var(--color-status-error)';
+                setTimeout(() => window.location.href = 'upload.html', 5000);
+            }
+        }
+
+        const interval = setInterval(() => {
+            if (generationFinished) return;
+            progress = Math.min(progress + Math.random() * 6, 92);
+            progressBar.style.width = progress + '%';
+            const newIndex = Math.min(statuses.length - 2, Math.floor((progress / 100) * statuses.length));
+            if (newIndex !== pIndex) {
+                pIndex = newIndex;
+                statusText.innerText = statuses[pIndex];
+            }
+        }, 600);
+
+        runGeneration();
+    </script>
+</body>
+</html>

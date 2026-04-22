@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>确认与下单 - AI 职业形象照</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="/static/css/system.css">
+    <link rel="stylesheet" href="/static/css/layout.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+
+    <style>
+        .workspace-layout { display: grid; grid-template-columns: 240px 1fr; gap: var(--space-48); min-height: calc(100vh - 80px); align-items: start; padding-top: var(--space-48); padding-bottom: var(--space-48); }
+        .steps-nav { position: sticky; top: 120px; }
+        .step-item { display: flex; align-items: center; gap: var(--space-12); padding: var(--space-12) 0; color: var(--color-text-tertiary); font-weight: var(--weight-medium); }
+        .step-item.active { color: var(--color-text-primary); }
+        .step-item.done { color: var(--color-text-secondary); }
+        .step-number { display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: var(--radius-full); background-color: var(--color-surface-elevated); font-size: var(--text-small); }
+        .step-item.active .step-number { background-color: var(--color-text-primary); color: var(--color-surface-pure); }
+        .step-item.done .step-number { background-color: transparent; border: 1px solid var(--color-text-secondary); color: var(--color-text-secondary); }
+
+        .summary-block {
+            padding: var(--space-24);
+            border: 1px solid var(--color-border-subtle);
+            border-radius: var(--radius-lg);
+            background-color: var(--color-surface-pure);
+            margin-bottom: var(--space-24);
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: var(--space-16) 0;
+            border-bottom: 1px solid var(--color-surface-elevated);
+        }
+        .summary-row:last-child { border-bottom: none; padding-bottom: 0; }
+        .summary-row:first-child { padding-top: 0; }
+
+        .price-total {
+            font-size: var(--text-h2);
+            font-weight: var(--weight-semibold);
+            text-align: right;
+            margin-top: var(--space-16);
+            color: var(--color-text-primary);
+        }
+        
+        .trust-text {
+            font-size: var(--text-small);
+            color: var(--color-text-tertiary);
+            text-align: center;
+            margin-top: var(--space-16);
+        }
+
+        @media (max-width: 768px) {
+            .workspace-layout { grid-template-columns: 1fr; gap: var(--space-24); padding-top: var(--space-16); padding-bottom: 32px; }
+            .steps-nav { display: flex; overflow-x: auto; position: relative; top: 0; padding-bottom: var(--space-8); border-bottom: 1px solid var(--color-border-subtle); }
+            .step-item { flex-shrink: 0; padding: var(--space-8) var(--space-12); }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="header-sticky" style="height: 64px; display: flex; align-items: center; border-bottom: 1px solid var(--color-border-subtle);">
+        <div class="container flex-row justify-between w-100" style="width: 100%;">
+            <a href="index.html" style="font-weight: var(--weight-semibold); font-size: 1.1rem; color: var(--color-text-primary);">Auralis<span style="color:var(--color-text-secondary); margin-left: 6px; font-size: .82em; letter-spacing: .08em;">曜临</span></a>
+            <span style="font-size: var(--text-small); color: var(--color-text-tertiary);">订单安全加密</span>
+        </div>
+    </nav>
+
+    <div class="container workspace-layout">
+        
+        <aside class="steps-nav">
+            <div class="step-item done"><div class="step-number">✓</div><span>上传照片</span></div>
+            <div class="step-item done"><div class="step-number">✓</div><span>选择风格</span></div>
+            <div class="step-item active"><div class="step-number">3</div><span>确认信息</span></div>
+            <div class="step-item"><div class="step-number">4</div><span>结果生成</span></div>
+        </aside>
+
+        <main class="content-area">
+            <div class="mb-lg">
+                <h1 class="mb-sm" style="font-size: var(--text-h2);">确认订单并开始生成</h1>
+                <p style="margin: 0;">请最后检查你的生成配置。支付后约需 2-5 分钟渲染。</p>
+            </div>
+
+            <div class="summary-block">
+                <div class="summary-row">
+                    <span style="color: var(--color-text-secondary);">已上传照片对象</span>
+                    <span style="font-weight: var(--weight-medium);"><span class="badge" id="photo-count-badge">已存入队列 0 张</span></span>
+                </div>
+                <div class="summary-row">
+                    <span style="color: var(--color-text-secondary);">影像风格解析</span>
+                    <span style="font-weight: var(--weight-medium); text-align: right;" id="style-summary">求职简历场景<br><span style="color:var(--color-text-tertiary); font-size: var(--text-small);">亲和专业 / 适度美颜 / 智能背景</span></span>
+                </div>
+                <div class="summary-row">
+                    <span style="color: var(--color-text-secondary);">套餐权益 (基础版)</span>
+                    <span style="font-weight: var(--weight-medium); text-align: right;">1 张职业形象照<br><span style="color:var(--color-text-tertiary); font-size: var(--text-small);">按当前服装与颜色配置生成</span></span>
+                </div>
+                <div class="summary-row" style="background-color: var(--color-surface-subtle); margin: var(--space-16) -var(--space-24) -var(--space-24); padding: var(--space-24); border-radius: 0 0 var(--radius-lg) var(--radius-lg);">
+                    <div style="width: 100%;">
+                        <div class="flex-row justify-between mb-sm">
+                            <span style="color: var(--color-text-secondary);">本次生成</span>
+                            <span class="price-total" style="margin-top: 0;">预览免费</span>
+                        </div>
+                        <button class="btn btn-primary" style="width: 100%; margin-top: var(--space-16);" onclick="startGeneration()">开始生成预览</button>
+                        <div class="trust-text">满意后解锁高清原图时消耗 1 点积分，不满意可重抽。</div>
+                    </div>
+                </div>
+            </div>
+            
+            <a href="style.html" class="btn btn-ghost" style="display: block; text-align: center;">返回修改风格</a>
+
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if(!localStorage.getItem('impeccable_user')) { window.location.href = 'login.html'; return; }
+            const photoIds = JSON.parse(localStorage.getItem('impeccable_uploaded_photo_ids') || '[]');
+            if (!photoIds.length) { window.location.href = 'upload.html'; return; }
+
+            document.getElementById('photo-count-badge').innerText = `已存入队列 ${photoIds.length} 张`;
+
+            const config = JSON.parse(localStorage.getItem('impeccable_style_config') || '{}');
+            const cropText = config.crop === 'full' ? '完整全身展现' : '经典半身胸像';
+            document.getElementById('style-summary').innerHTML = `${cropText}<br><span style="color:var(--color-text-tertiary); font-size: var(--text-small);">${config.jacket || '标准单排扣西装'} / ${config.shirt || '标准温莎领衬衫'} / 智能背景</span>`;
+        });
+
+        function startGeneration() {
+            const photoIds = JSON.parse(localStorage.getItem('impeccable_uploaded_photo_ids') || '[]');
+            if (!photoIds.length) {
+                alert('照片队列为空，请重新上传。');
+                window.location.href = 'upload.html';
+                return;
+            }
+            localStorage.setItem('impeccable_generation_request_id', `req_${Date.now()}_${Math.random().toString(36).slice(2)}`);
+            window.location.href='generating.html';
+        }
+    </script>
+</body>
+</html>

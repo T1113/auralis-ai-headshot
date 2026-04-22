@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 / 注册 - AI 职业形象照</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="/static/css/system.css">
+    <link rel="stylesheet" href="/static/css/layout.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+
+    <style>
+        body {
+            background-color: var(--color-surface-subtle);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-24);
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 440px;
+            background-color: var(--color-surface-pure);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--color-border-subtle);
+            box-shadow: var(--shadow-lg);
+            padding: var(--space-48) var(--space-32);
+            position: relative;
+            overflow: hidden;
+            transition: height 0.3s ease;
+        }
+
+        .auth-card::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background-color: var(--color-text-primary); }
+        .auth-header { text-align: center; margin-bottom: var(--space-32); position: relative; }
+        .auth-logo { font-weight: var(--weight-semibold); font-size: 1.25rem; color: var(--color-text-primary); margin-bottom: var(--space-24); display: block; text-decoration: none; }
+
+        /* General UI components */
+        .btn-social { width: 100%; margin-bottom: var(--space-12); background-color: var(--color-surface-pure); color: var(--color-text-primary); border: 1px solid var(--color-border-strong); display: flex; align-items: center; justify-content: center; gap: var(--space-12); }
+        .btn-social:hover { background-color: var(--color-surface-elevated); }
+        .social-icon { width: 20px; height: 20px; }
+        .divider { display: flex; align-items: center; text-align: center; margin: var(--space-24) 0; color: var(--color-text-tertiary); font-size: var(--text-small); }
+        .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid var(--color-border-subtle); }
+        .divider:not(:empty)::before { margin-right: var(--space-16); }
+        .divider:not(:empty)::after { margin-left: var(--space-16); }
+        .auth-footer { margin-top: var(--space-24); text-align: center; font-size: var(--text-small); color: var(--color-text-secondary); }
+        .auth-link { color: var(--color-text-primary); font-weight: var(--weight-medium); cursor: pointer; text-decoration: underline; text-underline-offset: 4px; }
+        .legal-text { font-size: 0.75rem; color: var(--color-text-tertiary); text-align: center; margin-top: var(--space-24); }
+        .legal-text a { color: #0066cc; text-decoration: underline; text-underline-offset: 2px; }
+
+        /* Multi-step Registration specific */
+        .auth-view { display: none; }
+        .auth-view.active { display: block; }
+        
+        .reg-step-view { display: none; animation: fadeIn 0.3s ease; }
+        .reg-step-view.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: translateX(0); } }
+
+        /* Top Progress Bar for Reg Steps */
+        .reg-progress {
+            display: none;
+            width: 100%;
+            height: 4px;
+            background-color: var(--color-surface-elevated);
+            border-radius: var(--radius-full);
+            margin-bottom: var(--space-24);
+            position: relative;
+            overflow: hidden;
+        }
+        .reg-progress-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background-color: var(--color-text-primary);
+            width: 33%;
+            transition: width 0.3s ease;
+        }
+
+        /* Password Strength Meter */
+        .pwd-meter { display: flex; gap: 4px; margin-top: -4px; margin-bottom: var(--space-16); height: 4px; }
+        .pwd-bar { flex: 1; background-color: var(--color-surface-elevated); border-radius: var(--radius-full); transition: all 0.3s ease; }
+        .pwd-label { font-size: 0.75rem; color: var(--color-text-tertiary); text-align: right; margin-top: 4px; margin-bottom: var(--space-16); }
+
+        .pwd-weak .bar-1 { background-color: var(--color-status-error); }
+        .pwd-fair .bar-1, .pwd-fair .bar-2 { background-color: oklch(0.7 0.15 80); } /* Yellowish */
+        .pwd-strong .bar-1, .pwd-strong .bar-2, .pwd-strong .bar-3 { background-color: var(--color-status-success); }
+
+        /* Success Animation State */
+        .success-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: var(--space-32) 0;
+        }
+
+        .check-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: oklch(from var(--color-status-success) 0.98 c h);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: var(--space-24);
+            position: relative;
+        }
+
+        .check-svg {
+            width: 40px;
+            height: 40px;
+            stroke-dasharray: 100;
+            stroke-dashoffset: 100;
+            color: var(--color-status-success);
+        }
+
+        .check-svg.animate {
+            animation: drawCheck 0.6s ease forwards;
+        }
+
+        @keyframes drawCheck {
+            to { stroke-dashoffset: 0; }
+        }
+
+        /* Material / Google-style Floating Inputs */
+        .form-floating {
+            position: relative;
+            margin-bottom: var(--space-16);
+            width: 100%;
+        }
+
+        .form-floating input {
+            width: 100%;
+            height: 56px;
+            padding: 24px 16px 8px 16px;
+            border: 1px solid var(--color-border-strong);
+            border-radius: var(--radius-md);
+            background-color: var(--color-surface-pure);
+            font-size: var(--text-body);
+            transition: all 0.2s ease;
+        }
+
+        .form-floating input:focus {
+            border-color: #0b57d0; /* Google Primary Blue */
+            box-shadow: 0 0 0 1px #0b57d0;
+            outline: none;
+        }
+
+        .form-floating label {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: var(--text-body);
+            color: var(--color-text-secondary);
+            pointer-events: none;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            background-color: transparent;
+            padding: 0 4px;
+        }
+
+        /* When focused or has value */
+        .form-floating input:focus ~ label,
+        .form-floating input:not(:placeholder-shown) ~ label {
+            top: 14px;
+            font-size: 0.75rem;
+            color: #0b57d0;
+        }
+
+        /* Gray out label logic when un-focused but has content */
+        .form-floating input:not(:placeholder-shown):not(:focus) ~ label {
+            color: var(--color-text-secondary);
+        }
+
+        /* Help texts outside floating inputs */
+        .input-help {
+            font-size: var(--text-small);
+            color: var(--color-text-secondary);
+            margin-top: -8px;
+            margin-bottom: var(--space-16);
+            display: block;
+        }
+
+        /* Password Requirements Guidelines */
+        .pwd-req-list {
+            list-style: none;
+            padding: 0;
+            margin: var(--space-8) 0 var(--space-16) 0;
+            font-size: 0.8rem;
+            color: var(--color-text-tertiary);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .pwd-req-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.2s ease;
+        }
+
+        .pwd-req-icon {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background-color: var(--color-surface-elevated);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: transparent;
+            font-size: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .pwd-req-item.met {
+            color: var(--color-text-primary);
+        }
+
+        .pwd-req-item.met .pwd-req-icon {
+            background-color: oklch(from var(--color-status-success) 0.98 c h);
+            color: var(--color-status-success);
+        }
+
+        /* Email Suggestion Dropdown */
+        .email-suggest-list {
+            display: none;
+            position: absolute;
+            top: 100%; left: 0; right: 0;
+            background: var(--color-surface-pure);
+            border: 1px solid var(--color-border-strong);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            z-index: 1000;
+            list-style: none; padding: 0; margin: 4px 0 0 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .email-suggest-list.active {
+            display: block;
+        }
+        .email-suggest-item {
+            padding: var(--space-12) var(--space-16);
+            cursor: pointer;
+            font-size: var(--text-body);
+            color: var(--color-text-primary);
+            transition: background-color 0.2s ease;
+        }
+        .email-suggest-item:hover {
+            background-color: var(--color-surface-subtle);
+        }
+
+        /* Global Toast */
+        .toast-container {
+            position: fixed;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 9999;
+            background-color: var(--color-text-primary);
+            color: var(--color-surface-pure);
+            padding: 12px 24px;
+            border-radius: var(--radius-full);
+            font-size: var(--text-body);
+            font-weight: var(--weight-medium);
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .toast-container.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+        .toast-error { background-color: var(--color-status-error); }
+        .toast-success { background-color: var(--color-status-success); color: #fff; }
+
+        /* Caps Lock Warning */
+        .caps-lock-warning {
+            display: none;
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.75rem;
+            font-weight: var(--weight-medium);
+            color: #b7791f; /* Warning yellow/orange */
+            background-color: oklch(0.98 0.05 80);
+            padding: 4px 8px;
+            border-radius: 4px;
+            pointer-events: none;
+            border: 1px solid #d69e2e;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="auth-card" id="auth-card">
+        <div class="auth-header">
+            <a href="index.html" class="auth-logo">Auralis<span style="color:var(--color-text-secondary); margin-left: 6px; font-size: .82em; letter-spacing: .08em;">曜临</span></a>
+            <h1 id="auth-title" style="font-size: var(--text-h3);">欢迎回来</h1>
+            <p id="auth-subtitle" style="font-size: var(--text-small); color: var(--color-text-secondary); margin-top: var(--space-8); margin-bottom: 0;">登录以继续管理您的专属职业形象库</p>
+        </div>
+
+        <div id="reg-progress-bar" class="reg-progress">
+            <div id="reg-progress-fill" class="reg-progress-fill"></div>
+        </div>
+
+        <div id="global-toast" class="toast-container"></div>
+
+        <!-- Social Buttons Box (hides during multi-step inner progression) -->
+        <div id="social-box">
+            <button class="btn btn-social">
+                <svg class="social-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/><path fill="none" d="M1 1h22v22H1z"/></svg>
+                使用 Google 继续
+            </button>
+            <button class="btn btn-social">
+                <svg class="social-icon" viewBox="0 0 1024 1024"><path fill="#07C160" d="M682.667 601.6c-4.267 0-4.267 0-4.267-4.267v-4.267c4.267-81.067-21.333-162.133-72.533-230.4-38.4-46.933-93.867-85.333-157.867-106.667-17.067-4.267-34.133-8.533-51.2-8.533-59.733 0-119.467 17.067-170.667 55.467-93.867 64-157.867 157.867-174.933 268.8-12.8 68.267 0 136.533 25.6 196.267-4.267 34.133-17.067 68.267-38.4 102.4l-12.8 17.067c-4.267 4.267 0 12.8 8.533 8.533 21.333-8.533 46.933-12.8 68.267-21.333 17.067-4.267 34.133-12.8 51.2-21.333 46.933 25.6 98.133 34.133 149.333 38.4 128 4.267 247.467-55.467 320-153.6 42.667-42.667 72.533-89.6 85.333-145.067 0 0 0-4.267 4.267-4.267v4.267zM388.267 430.933c-21.333 0-42.667-21.333-42.667-42.667s21.333-42.667 42.667-42.667 42.667 21.333 42.667 42.667-21.333 42.667-42.667 42.667zM576 430.933c-21.333 0-42.667-21.333-42.667-42.667s21.333-42.667 42.667-42.667c21.333 0 42.667 21.333 42.667 42.667 0 17.067-21.333 42.667-42.667 42.667zM972.8 686.933c0-110.933-102.4-196.267-230.4-196.267s-230.4 89.6-230.4 196.267 102.4 196.267 230.4 196.267c29.867 0 59.733-4.267 85.333-17.067 25.6 12.8 55.467 29.867 85.333 38.4l8.533-8.533c-12.8-21.333-21.333-42.667-25.6-68.267 46.933-38.4 76.8-85.333 76.8-140.8zM644.267 644.267c-17.067 0-25.6-12.8-25.6-25.6s12.8-25.6 25.6-25.6c17.067 0 25.6 12.8 25.6 25.6 4.267 17.067-4.267 25.6-25.6 25.6zM823.467 644.267c-17.067 0-25.6-12.8-25.6-25.6s12.8-25.6 25.6-25.6c17.067 0 25.6 12.8 25.6 25.6 4.267 17.067-4.267 25.6-25.6 25.6z"/></svg>
+                使用 微信 扫码继续
+            </button>
+            <div class="divider" id="social-divider">或者使用邮箱持续访问</div>
+        </div>
+
+        <!-- VIEW 1: NORMAL LOGIN (Default) -->
+        <div id="view-login" class="auth-view active">
+            <div class="form-floating" style="z-index: 100;">
+                <input type="email" id="login-email" placeholder=" " oninput="handleEmailAuto(this, 'login-suggest')" onblur="blurEmailAuto('login-suggest')">
+                <label for="login-email">工作邮箱或个人邮箱</label>
+                <ul id="login-suggest" class="email-suggest-list"></ul>
+            </div>
+            
+            <div class="form-floating" style="margin-bottom: var(--space-8);">
+                <input type="password" id="login-pswd" placeholder=" " onkeyup="checkCapsLock(event, 'caps-login')" onmousedown="checkCapsLock(event, 'caps-login')">
+                <label for="login-pswd">密码</label>
+                <div id="caps-login" class="caps-lock-warning">中/大写锁定</div>
+            </div>
+            <div style="text-align: right; margin-bottom: var(--space-16);">
+                <a href="#" style="font-size: var(--text-small); color: #0b57d0; font-weight: var(--weight-medium); text-decoration: none;">忘记密码？</a>
+            </div>
+
+            <button class="btn btn-primary" style="width: 100%; margin-top: var(--space-8);" onclick="executeLogin()">登录安全账户</button>
+            
+            <div class="auth-footer">还没有账户？ <span class="auth-link" style="color: #0b57d0;" onclick="switchMainView('register')">免费注册</span></div>
+        </div>
+
+        <!-- VIEW 2: MULTI-STEP REGISTRATION WIZARD -->
+        <div id="view-register" class="auth-view">
+            
+            <!-- Reg Step 1: Email & Identity -->
+            <div id="reg-s1" class="reg-step-view active">
+                <div class="form-floating">
+                    <input type="text" id="reg-name" placeholder=" " oninput="checkS1()">
+                    <label for="reg-name">您想设置的用户名 / 昵称</label>
+                </div>
+                <div class="form-floating" style="z-index: 101;">
+                    <input type="email" id="reg-email" placeholder=" " oninput="handleEmailAuto(this, 'reg-suggest')" onblur="blurEmailVal(this, 'reg-suggest')">
+                    <label for="reg-email">工作或个人邮箱地址</label>
+                    <ul id="reg-suggest" class="email-suggest-list"></ul>
+                </div>
+                <div id="reg-email-err" class="error-text" style="display:none; margin-top: -8px; margin-bottom: var(--space-8);">❌ 请输入包含 @ 的正确邮箱格式</div>
+                <span class="input-help">我们将发送一封验证邮件以确保账户安全。</span>
+
+                <button class="btn btn-primary" id="btn-next-s1" style="width: 100%; margin-top: var(--space-8);" disabled onclick="goToStep(2)">下一步</button>
+                <div class="auth-footer">已经拥有账户？ <span class="auth-link" style="color: #0b57d0;" onclick="switchMainView('login')">直接登录</span></div>
+            </div>
+
+            <!-- Reg Step 2: Passwords & Strength -->
+            <div id="reg-s2" class="reg-step-view">
+                <div class="flex-row gap-sm mb-lg" style="color: #0b57d0; font-weight: var(--weight-medium); font-size: var(--text-small); cursor:pointer;" onclick="goToStep(1)">
+                    <span style="transform: rotate(180deg); display:inline-block;">➜</span> 修改邮箱
+                </div>
+                
+                <div class="form-floating">
+                    <input type="password" id="reg-pswd" placeholder=" " oninput="checkStrength(this.value)" onkeyup="checkCapsLock(event, 'caps-reg')" onmousedown="checkCapsLock(event, 'caps-reg')">
+                    <label for="reg-pswd">设置安全密码</label>
+                    <div id="caps-reg" class="caps-lock-warning">中/大写锁定</div>
+                </div>
+                
+                <!-- Explicit Password Guidelines -->
+                <ul class="pwd-req-list">
+                    <li class="pwd-req-item" id="req-len"><div class="pwd-req-icon">✔</div>至少 8 个字符</li>
+                    <li class="pwd-req-item" id="req-up"><div class="pwd-req-icon">✔</div>包含大写字母</li>
+                    <li class="pwd-req-item" id="req-low"><div class="pwd-req-icon">✔</div>包含小写字母</li>
+                    <li class="pwd-req-item" id="req-num"><div class="pwd-req-icon">✔</div>数字或特殊符号</li>
+                </ul>
+                
+                <div class="pwd-meter" id="pwd-meter">
+                    <div class="pwd-bar bar-1"></div>
+                    <div class="pwd-bar bar-2"></div>
+                    <div class="pwd-bar bar-3"></div>
+                </div>
+                <div class="pwd-label" id="pwd-label">尚需输入密码</div>
+
+                <div class="form-floating" style="margin-top: var(--space-16);">
+                    <input type="password" id="reg-pswd-cfm" placeholder=" " oninput="checkMatch()" onkeyup="checkCapsLock(event, 'caps-reg-cfm')" onmousedown="checkCapsLock(event, 'caps-reg-cfm')">
+                    <label for="reg-pswd-cfm">再次确认密码</label>
+                    <div id="caps-reg-cfm" class="caps-lock-warning">中/大写锁定</div>
+                </div>
+                <div id="pwd-match-error" class="error-text" style="display:none; margin-top: -8px; margin-bottom: var(--space-16);">❌ 两次密码输入不一致</div>
+
+                <button class="btn btn-primary" id="btn-create-acc" style="width: 100%; margin-top: var(--space-8);" disabled onclick="createAccount()">立即创建账户</button>
+            </div>
+
+            <!-- Reg Step 3: Success Animation -->
+            <div id="reg-s3" class="reg-step-view">
+                <div class="success-state">
+                    <div class="check-circle">
+                        <svg class="check-svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <h2 class="mb-sm" style="font-size: var(--text-h3);">账户创建成功！</h2>
+                    <p style="color: var(--color-text-secondary); font-size: var(--text-small);">将为您自动跳转至个人控制台...</p>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="legal-text" id="legal-box">
+            注册/登录即表示您同意我们的 <a href="terms.html" target="_blank">服务条款</a>，阅读并明白在 <a href="privacy.html" target="_blank">隐私说明</a> 中的照片消除权承诺。
+        </div>
+    </div>
+
+    <script>
+        // --- Main Tab Switch (Login VS Register) ---
+        function switchMainView(target) {
+            const title = document.getElementById('auth-title');
+            const subTitle = document.getElementById('auth-subtitle');
+            const socialBox = document.getElementById('social-box');
+            const progBar = document.getElementById('reg-progress-bar');
+            const legalBox = document.getElementById('legal-box');
+
+            document.getElementById('view-login').classList.remove('active');
+            document.getElementById('view-register').classList.remove('active');
+
+            if (target === 'register') {
+                document.getElementById('view-register').classList.add('active');
+                title.innerText = "创建新账户";
+                subTitle.innerText = "上传几张图片，让 AI 重塑商业第一印象";
+                subTitle.style.display = "block";
+                progBar.style.display = "block";
+                socialBox.style.display = "block";
+                legalBox.style.display = "block";
+                goToStep(1); // Reset to step 1
+            } else {
+                document.getElementById('view-login').classList.add('active');
+                title.innerText = "欢迎回来";
+                subTitle.innerText = "登录以继续管理您的专属职业形象库";
+                subTitle.style.display = "none";
+                socialBox.style.display = "block";
+                progBar.style.display = "none";
+                legalBox.style.display = "none";
+            }
+        }
+
+        async function executeLogin() {
+            const email = document.getElementById('login-email').value.trim();
+            const pswd = document.getElementById('login-pswd').value.trim();
+            
+            if (!email || !pswd) {
+                showToast("登录失败：请填写完整的邮箱与密码", "error");
+                return;
+            }
+            if (email.indexOf('@') === -1) {
+                showToast("登录失败：邮箱格式不正确", "error");
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password: pswd })
+                });
+                const data = await response.json();
+                if (!response.ok || !data.success) throw new Error(data.error || '登录失败。');
+                localStorage.setItem('impeccable_user', data.user.id);
+                localStorage.setItem('impeccable_user_name', data.user.name);
+                showToast("验证成功，正在进入您的控制台...", "success");
+                setTimeout(() => {
+                    window.location.href='dashboard.html';
+                }, 800);
+            } catch (error) {
+                showToast(error.message, "error");
+            }
+        }
+
+        async function createAccount() {
+            const name = document.getElementById('reg-name').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const password = document.getElementById('reg-pswd').value;
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+                const data = await response.json();
+                if (!response.ok || !data.success) throw new Error(data.error || '注册失败。');
+                localStorage.setItem('impeccable_user', data.user.id);
+                localStorage.setItem('impeccable_user_name', data.user.name);
+                goToStep(3);
+            } catch (error) {
+                showToast(error.message, "error");
+            }
+        }
+
+        // --- Caps Lock Detection Helper ---
+        function checkCapsLock(e, warningId) {
+            const warningEl = document.getElementById(warningId);
+            if (e.getModifierState && e.getModifierState('CapsLock')) {
+                warningEl.style.display = 'block';
+            } else {
+                warningEl.style.display = 'none';
+            }
+        }
+
+        // --- Multi-Step Google-Style Router ---
+        function goToStep(step) {
+            document.querySelectorAll('.reg-step-view').forEach(v => v.classList.remove('active'));
+            document.getElementById('reg-s' + step).classList.add('active');
+
+            const socialBox = document.getElementById('social-box');
+            const legalBox = document.getElementById('legal-box');
+            const progFill = document.getElementById('reg-progress-fill');
+            const curTitle = document.getElementById('auth-title');
+            const subTitle = document.getElementById('auth-subtitle');
+
+            if (step === 1) {
+                progFill.style.width = "33%";
+                curTitle.innerText = "创建新账户";
+                subTitle.style.display = "block";
+                socialBox.style.display = "block";
+                legalBox.style.display = "block";
+            } else if (step === 2) {
+                progFill.style.width = "66%";
+                curTitle.innerText = "保护账户环境";
+                subTitle.style.display = "none";
+                socialBox.style.display = "none"; // Hide socials down the funnel
+                legalBox.style.display = "block";
+            } else if (step === 3) {
+                progFill.style.width = "100%";
+                document.getElementById('auth-title').innerText = "";
+                subTitle.style.display = "none";
+                socialBox.style.display = "none";
+                legalBox.style.display = "none";
+                document.getElementById('reg-progress-bar').style.display = "none";
+                
+                // Trigger success animation
+                setTimeout(() => {
+                    document.querySelector('.check-svg').classList.add('animate');
+                }, 100);
+
+                // Auto-redirect
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 2000);
+            }
+        }
+
+        // Validate S1 (Email & Name)
+        function checkS1() {
+            const btn = document.getElementById('btn-next-s1');
+            const emailNode = document.getElementById('reg-email');
+            const nameNode = document.getElementById('reg-name');
+            
+            const hasEmail = emailNode.value.trim().indexOf('@') > -1;
+            const hasName = nameNode.value.trim().length > 0;
+            
+            btn.disabled = !(hasEmail && hasName);
+        }
+
+        // --- Global Toast Notification Logic ---
+        let toastTimer;
+        function showToast(msg, type = 'normal') {
+            const toast = document.getElementById('global-toast');
+            clearTimeout(toastTimer);
+            toast.className = 'toast-container'; // reset
+            if (type === 'error') toast.classList.add('toast-error');
+            if (type === 'success') toast.classList.add('toast-success');
+            
+            const icon = type === 'error' ? '✖ ' : (type === 'success' ? '✔ ' : '');
+            toast.innerHTML = icon + msg;
+            toast.classList.add('show');
+            
+            toastTimer = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // --- Email Autocomplete Logic ---
+        const suffixes = ['@gmail.com', '@outlook.com', '@163.com', '@qq.com', '@foxmail.com', '@icloud.com'];
+        function handleEmailAuto(inputNode, listId) {
+            if (inputNode.id === 'reg-email') checkS1(); // Trigger reg validation
+            const val = inputNode.value.trim();
+            const listNode = document.getElementById(listId);
+            
+            if (val.includes('@')) {
+                const parts = val.split('@');
+                const prefix = parts[0];
+                const typedSuffix = '@' + parts[1];
+                
+                let matches = suffixes.filter(s => s.startsWith(typedSuffix) && s !== typedSuffix);
+                
+                if (matches.length > 0 && prefix.length > 0) {
+                    listNode.innerHTML = '';
+                    matches.forEach(s => {
+                        let li = document.createElement('li');
+                        li.className = 'email-suggest-item';
+                        li.innerHTML = `<span style="font-weight:600;">${prefix}</span>${s}`;
+                        li.onmousedown = (e) => {
+                            e.preventDefault(); // Prevent blur triggering before click fires
+                            inputNode.value = prefix + s;
+                            listNode.classList.remove('active');
+                            if (inputNode.id === 'reg-email') checkS1();
+                        };
+                        listNode.appendChild(li);
+                    });
+                    listNode.classList.add('active');
+                } else {
+                    listNode.classList.remove('active');
+                }
+            } else {
+                listNode.classList.remove('active');
+            }
+        }
+
+        function blurEmailAuto(listId) {
+            document.getElementById(listId).classList.remove('active');
+        }
+
+        // Specialized Blur for S1 Reg Email explicitly showing visual error
+        function blurEmailVal(inputNode, listId) {
+            blurEmailAuto(listId);
+            const val = inputNode.value.trim();
+            const errNode = document.getElementById('reg-email-err');
+            if (val.length > 0 && val.indexOf('@') === -1) {
+                errNode.style.display = "flex";
+            } else {
+                errNode.style.display = "none";
+            }
+        }
+
+        // Validate password match
+        let isStrongEnough = false;
+        function checkMatch() {
+            const p1 = document.getElementById('reg-pswd').value;
+            const p2 = document.getElementById('reg-pswd-cfm').value;
+            const err = document.getElementById('pwd-match-error');
+            const btn = document.getElementById('btn-create-acc');
+
+            if(p2.length > 0 && p1 !== p2) {
+                err.style.display = 'block';
+                btn.disabled = true;
+            } else {
+                err.style.display = 'none';
+                if(p2.length > 0 && p1 === p2 && isStrongEnough) {
+                    btn.disabled = false;
+                } else {
+                    btn.disabled = true;
+                }
+            }
+        }
+
+        // Check Strength
+        function checkStrength(value) {
+            const meter = document.getElementById('pwd-meter');
+            const label = document.getElementById('pwd-label');
+            let val = value.trim();
+
+            isStrongEnough = false;
+            meter.classList.remove('pwd-weak', 'pwd-fair', 'pwd-strong');
+
+            // 1. Evaluate explicit rules
+            const hasLen = val.length >= 8;
+            const hasUp = /[A-Z]/.test(val);
+            const hasLow = /[a-z]/.test(val);
+            const hasNum = /[0-9\W]/.test(val);
+
+            // 2. Toggle UI ticks
+            document.getElementById('req-len').classList.toggle('met', hasLen);
+            document.getElementById('req-up').classList.toggle('met', hasUp);
+            document.getElementById('req-low').classList.toggle('met', hasLow);
+            document.getElementById('req-num').classList.toggle('met', hasNum);
+
+            // 3. Overall strength logic
+            const satisfiedCount = [hasLen, hasUp, hasLow, hasNum].filter(Boolean).length;
+
+            if (val.length === 0) {
+                label.innerText = "尚需输入密码";
+            } else if (satisfiedCount <= 1) {
+                meter.classList.add('pwd-weak');
+                label.innerText = "弱 (请满足更多指引要求)";
+                label.style.color = "var(--color-status-error)";
+            } else if (satisfiedCount === 2 || satisfiedCount === 3) {
+                meter.classList.add('pwd-fair');
+                label.innerText = "中等 (勉强可用，仍可优化)";
+                label.style.color = "oklch(0.7 0.15 80)";
+                // We lock submission until ALL core rules are met for enterprise grade
+                isStrongEnough = false; 
+            } else if (satisfiedCount === 4) {
+                meter.classList.add('pwd-strong');
+                label.innerText = "强 (非常出色，合规)";
+                label.style.color = "var(--color-status-success)";
+                isStrongEnough = true; // ALL 4 criteria MUST be met
+            }
+
+            checkMatch(); // Re-verify the submit button
+        }
+
+    </script>
+</body>
+</html>
