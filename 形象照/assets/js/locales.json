@@ -12,7 +12,8 @@
     "btn_view_cases": "查看案例",
     "trust_appointment": "无需预约摄影",
     "trust_hd": "支持高清下载",
-    "trust_privacy": "注重隐私处理"
+    "trust_privacy": "注重隐私处理",
+    "forgot_password": "忘记密码？"
   },
   "en": {
     "nav_gallery": "Showcase",
@@ -27,7 +28,8 @@
     "btn_view_cases": "View Showcase",
     "trust_appointment": "No Appointment Needed",
     "trust_hd": "HD Download Support",
-    "trust_privacy": "Privacy Focused"
+    "trust_privacy": "Privacy Focused",
+    "forgot_password": "Forgot Password?"
   },
   "ja": {
     "nav_gallery": "ギャラリー",
@@ -42,7 +44,8 @@
     "btn_view_cases": "事例を見る",
     "trust_appointment": "予約不要",
     "trust_hd": "高画質ダウンロード",
-    "trust_privacy": "プライバシー重視"
+    "trust_privacy": "プライバシー重視",
+    "forgot_password": "パスワードを忘れた場合"
   },
   "fr": {
     "nav_gallery": "Galerie",
@@ -57,7 +60,8 @@
     "btn_view_cases": "Voir les exemples",
     "trust_appointment": "Sans rendez-vous",
     "trust_hd": "Téléchargement HD",
-    "trust_privacy": "Confidentialité garantie"
+    "trust_privacy": "Confidentialité garantie",
+    "forgot_password": "Mot de passe oublié ?"
   },
   "es": {
     "nav_gallery": "Galería",
@@ -72,6 +76,7 @@
     "btn_view_cases": "Ver ejemplos",
     "trust_appointment": "Sin cita previa",
     "trust_hd": "Descarga en HD",
-    "trust_privacy": "Privacidad total"
+    "trust_privacy": "Privacidad total",
+    "forgot_password": "¿Olvidaste tu contraseña?"
   }
 }
