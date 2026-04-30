@@ -78,10 +78,6 @@
    MOBILE RESPONSIVE BREAKPOINTS (Max 390px base as per PRD)
    ========================================================================== */
 @media (max-width: 768px) {
-  .desktop-only {
-    display: none !important;
-  }
-
   /* Collapse all grids to single column on mobile */
   .grid {
     grid-template-columns: 1fr;
@@ -100,19 +96,5 @@
   
   .container {
     padding: 0 var(--space-16);
-  }
-
-  .header-sticky .container {
-    height: 64px !important;
-  }
-
-  .header-sticky .flex-row {
-    gap: var(--space-8);
-  }
-
-  .header-sticky .btn {
-    white-space: nowrap;
-    padding: 10px 12px;
-    font-size: 13px !important;
   }
 }

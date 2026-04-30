@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高管数据中心 - AI 职业形象照</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="./assets/css/system.css">
+    <link rel="stylesheet" href="./assets/css/layout.css">
+    <link rel="stylesheet" href="./assets/css/components.css">
+
+    <style>
+        body { background-color: var(--color-surface-subtle); }
+        .admin-nav {
+            background-color: #111;
+            color: #fff;
+            padding: var(--space-16) 0;
+            position: sticky; top: 0; z-index: 100;
+        }
+        .admin-nav a { color: #fff; text-decoration: none; font-weight: var(--weight-medium); }
+        
+        .metric-card {
+            background: var(--color-surface-pure);
+            border: 1px solid var(--color-border-subtle);
+            border-radius: var(--radius-lg);
+            padding: var(--space-24);
+            box-shadow: var(--shadow-sm);
+        }
+        .metric-value { font-size: 2.5rem; font-weight: 700; color: var(--color-text-primary); margin: var(--space-8) 0; }
+        .metric-label { font-size: var(--text-small); color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 1px; }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--color-surface-pure);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+        .data-table th, .data-table td {
+            padding: var(--space-16);
+            text-align: left;
+            border-bottom: 1px solid var(--color-border-subtle);
+            font-size: var(--text-small);
+        }
+        .data-table th { background-color: var(--color-surface-subtle); font-weight: var(--weight-semibold); color: var(--color-text-secondary); }
+        .data-table tr:hover { background-color: oklch(0.98 0 0); }
+        .data-table tr:last-child td { border-bottom: none; }
+        .support-console { display: grid; grid-template-columns: 280px 1fr; gap: var(--space-16); margin-top: var(--space-48); }
+        .thread-list, .thread-chat { background: var(--color-surface-pure); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; }
+        .thread-item { display: block; width: 100%; text-align: left; padding: var(--space-16); border: 0; border-bottom: 1px solid var(--color-border-subtle); background: transparent; cursor: pointer; }
+        .thread-item.active { background: #111; color: #fff; }
+        .admin-message-list { height: 360px; overflow-y: auto; padding: var(--space-16); display: flex; flex-direction: column; gap: var(--space-12); }
+        .admin-message { max-width: 78%; padding: var(--space-12) var(--space-16); border-radius: 18px; font-size: var(--text-small); line-height: 1.55; }
+        .admin-message.customer { align-self: flex-start; background: var(--color-surface-subtle); }
+        .admin-message.operator { align-self: flex-end; background: #111; color: #fff; }
+        .admin-composer { display: flex; gap: var(--space-12); padding: var(--space-16); border-top: 1px solid var(--color-border-subtle); }
+        .admin-composer input { flex: 1; border: 1px solid var(--color-border-subtle); border-radius: var(--radius-full); padding: 0 var(--space-16); }
+        @media (max-width: 820px) { .support-console { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+    <nav class="admin-nav">
+        <div class="container flex-row justify-between align-center">
+            <div class="flex-row align-center gap-md">
+                <span style="font-size: 1.2rem;">★</span>
+                <span style="font-weight: 600; font-size: 1.1rem; letter-spacing: 1px;">Auralis 曜临 - 运营指挥中心</span>
+            </div>
+            <a href="dashboard.html" class="btn btn-ghost" style="color: #fff; border: 1px solid rgba(255,255,255,0.3);">退出上帝视角</a>
+        </div>
+    </nav>
+
+    <main class="container mb-xl" style="margin-top: var(--space-32);">
+        
+        <h2 class="mb-lg" style="font-size: var(--text-h3);">平台实时数据洞察</h2>
+        
+        <!-- Metrics Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-24); margin-bottom: var(--space-48);">
+            <div class="metric-card">
+                <div class="metric-label">注册用户总池</div>
+                <div class="metric-value" id="metric-users">0</div>
+                <div style="font-size: 12px; color: var(--color-status-success);">↑ 较昨日新增活跃</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">GPU 渲染 4K 原图总数</div>
+                <div class="metric-value" id="metric-images">0</div>
+                <div style="font-size: 12px; color: var(--color-text-tertiary);">包含试看废案底稿</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">预估资产提货转化 (¥)</div>
+                <div class="metric-value" id="metric-revenue">¥ 0.0</div>
+                <div style="font-size: 12px; color: var(--color-text-tertiary);">模型：每发解锁预估 9.9 元</div>
+            </div>
+        </div>
+
+        <div class="flex-row justify-between align-end mb-md">
+            <h2 style="font-size: var(--text-h3); margin:0;">用户 CRM 库</h2>
+            <span style="font-size: 12px; color: var(--color-text-tertiary);">实时抓取 LocalStorage (impeccable_users_db)</span>
+        </div>
+        <div style="overflow-x: auto; margin-bottom: var(--space-48);">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>底层流水 ID</th>
+                        <th>账户名称</th>
+                        <th>授权邮箱</th>
+                        <th>初次踏入平台时间</th>
+                    </tr>
+                </thead>
+                <tbody id="user-table-body">
+                    <!-- Dynamic rendering -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="flex-row justify-between align-end mb-md">
+            <h2 style="font-size: var(--text-h3); margin:0;">AI 生成作业日志 (Jobs)</h2>
+            <span style="font-size: 12px; color: var(--color-text-tertiary);">实时抓取 LocalStorage (impeccable_assets)</span>
+        </div>
+        <div style="overflow-x: auto;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>作业批次号</th>
+                        <th>节点时间</th>
+                        <th>输出规格</th>
+                        <th>资产归属状态</th>
+                        <th>超管操作</th>
+                    </tr>
+                </thead>
+                <tbody id="asset-table-body">
+                    <!-- Dynamic rendering -->
+                </tbody>
+            </table>
+        </div>
+
+        <section class="support-console">
+            <div class="thread-list">
+                <div style="padding: var(--space-16); border-bottom: 1px solid var(--color-border-subtle);">
+                    <div class="metric-label">客服会话</div>
+                    <strong>用户与管理员对话</strong>
+                </div>
+                <div id="thread-list-body"></div>
+            </div>
+            <div class="thread-chat">
+                <div style="padding: var(--space-16); border-bottom: 1px solid var(--color-border-subtle);">
+                    <div style="font-size: var(--text-small); color: var(--color-text-tertiary);">当前处理</div>
+                    <strong id="active-thread-title">请选择一个用户</strong>
+                </div>
+                <div class="admin-message-list" id="admin-message-list">
+                    <div style="color: var(--color-text-tertiary);">暂无选中会话。</div>
+                </div>
+                <div class="admin-composer">
+                    <input id="admin-reply-input" maxlength="500" placeholder="输入管理员回复..." onkeydown="handleAdminComposerKey(event)">
+                    <button class="btn btn-primary" onclick="sendAdminReply()">回复用户</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="./assets/js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const session = await window.ImpeccableApp.requireAuth('login.html');
+                if (session.user.role !== 'admin') {
+                    window.location.href = 'dashboard.html';
+                    return;
+                }
+                await loadAdminData();
+                await loadSupportThreads();
+            } catch (_error) {
+                // Redirect handled in helper.
+            }
+        });
+
+        let activeSupportUserId = null;
+
+        async function loadAdminData() {
+            const response = await window.ImpeccableApp.apiFetch('/api/admin/summary');
+            const users = response.users || [];
+            const jobs = response.jobs || [];
+            
+            document.getElementById('metric-users').innerText = response.metrics.users;
+            document.getElementById('metric-images').innerText = Number(response.metrics.images).toLocaleString();
+            document.getElementById('metric-revenue').innerText = '¥ ' + response.metrics.revenue;
+
+            const userTable = document.getElementById('user-table-body');
+            userTable.innerHTML = '';
+            if (users.length === 0) {
+                userTable.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--color-text-tertiary);">暂无注册用户数据</td></tr>';
+            } else {
+                users.forEach((user) => {
+                    const tr = document.createElement('tr');
+                    const createdAt = new Date(user.createdAt);
+                    tr.innerHTML = `
+                        <td style="font-family: monospace; color: var(--color-text-secondary);">${user.id}</td>
+                        <td style="font-weight: 600;">${user.name}</td>
+                        <td>${user.email}</td>
+                        <td>${createdAt.toLocaleDateString()} ${createdAt.toLocaleTimeString()}</td>
+                    `;
+                    userTable.appendChild(tr);
+                });
+            }
+
+            const assetTable = document.getElementById('asset-table-body');
+            assetTable.innerHTML = '';
+            if (jobs.length === 0) {
+                assetTable.innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--color-text-tertiary);">暂无任何底层生成记录</td></tr>';
+            } else {
+                jobs.forEach((job) => {
+                    const tr = document.createElement('tr');
+                    const stamp = new Date(job.createdAt);
+                    const statusHtml = job.unlocked
+                        ? '<span class="badge badge-success">已提货付款</span>'
+                        : '<span class="badge error-text" style="background-color: var(--color-surface-subtle); color: var(--color-text-tertiary); border: 1px solid var(--color-border-subtle);">防盗初稿挂起</span>';
+
+                    tr.innerHTML = `
+                        <td style="font-family: monospace; color: var(--color-text-secondary);">${job.id}</td>
+                        <td>${stamp.toLocaleDateString()} ${stamp.toLocaleTimeString()}</td>
+                        <td>${job.resultCount} 张成片 (${job.packageTier})</td>
+                        <td>${statusHtml}</td>
+                        <td>
+                            <a href="result.html?batchId=${job.id}" target="_blank" style="color: #0b57d0; text-decoration: none; font-weight: 500;">👁 穿透窥探</a>
+                        </td>
+                    `;
+                    assetTable.appendChild(tr);
+                });
+            }
+        }
+
+        async function loadSupportThreads() {
+            const response = await window.ImpeccableApp.apiFetch('/api/chat/users');
+            const users = response.users || [];
+            const body = document.getElementById('thread-list-body');
+            if (!users.length) {
+                body.innerHTML = '<div style="padding: var(--space-16); color: var(--color-text-tertiary);">暂无客服会话</div>';
+                return;
+            }
+            body.innerHTML = users.map((user) => `
+                <button class="thread-item" data-user-id="${user.id}" onclick="selectSupportThread('${user.id}', '${escapeAttribute(user.name)}')">
+                    <div style="font-weight: 600;">${escapeHtml(user.name)}</div>
+                    <div style="font-size: 12px; opacity: .72;">${escapeHtml(user.email || user.id)}</div>
+                </button>
+            `).join('');
+        }
+
+        async function selectSupportThread(userId, name) {
+            activeSupportUserId = userId;
+            document.getElementById('active-thread-title').innerText = name || userId;
+            document.querySelectorAll('.thread-item').forEach((item) => item.classList.toggle('active', item.dataset.userId === userId));
+            await loadSupportMessages();
+        }
+
+        async function loadSupportMessages() {
+            if (!activeSupportUserId) return;
+            const response = await window.ImpeccableApp.apiFetch('/api/chat?userId=' + encodeURIComponent(activeSupportUserId));
+            const messages = response.messages || [];
+            const list = document.getElementById('admin-message-list');
+            list.innerHTML = messages.map((message) => {
+                const cls = message.isAdmin ? 'operator' : 'customer';
+                return `<div class="admin-message ${cls}">${escapeHtml(message.content)}</div>`;
+            }).join('') || '<div style="color: var(--color-text-tertiary);">暂无消息。</div>';
+            list.scrollTop = list.scrollHeight;
+        }
+
+        async function sendAdminReply() {
+            const input = document.getElementById('admin-reply-input');
+            const content = input.value.trim();
+            if (!activeSupportUserId || !content) return;
+            await window.ImpeccableApp.apiFetch('/api/chat', {
+                method: 'POST',
+                body: JSON.stringify({
+                    userId: activeSupportUserId,
+                    isAdmin: true,
+                    content
+                })
+            });
+            input.value = '';
+            await loadSupportMessages();
+            await loadSupportThreads();
+        }
+
+        function handleAdminComposerKey(event) {
+            if (event.key === 'Enter') sendAdminReply();
+        }
+
+        function escapeHtml(value) {
+            return String(value).replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
+        }
+
+        function escapeAttribute(value) {
+            return String(value || '').replace(/['"\\]/g, '');
+        }
+    </script>
+</body>
+</html>

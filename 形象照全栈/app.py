@@ -37,6 +37,14 @@ def load_env_file():
 
 load_env_file()
 
+
+@app.after_request
+def disable_dev_cache(response):
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
+
 # --- Database Setup ---
 def init_db():
     conn = sqlite3.connect(DB_PATH)
@@ -161,11 +169,13 @@ def mime_type_for(path):
         return 'image/png'
     if ext == '.webp':
         return 'image/webp'
+    if ext == '.heic':
+        return 'image/heic'
     return 'application/octet-stream'
 
 def image_to_base64(path):
     encoded = base64.b64encode(path.read_bytes()).decode('ascii')
-    if os.getenv('DOUBAO_INPUT_IMAGE_FORMAT', 'base64').lower() == 'data_url':
+    if os.getenv('DOUBAO_INPUT_IMAGE_FORMAT', 'data_url').lower() == 'data_url':
         return f'data:{mime_type_for(path)};base64,{encoded}'
     return encoded
 
@@ -177,10 +187,41 @@ def validate_public_image_url(image_url):
         raise RuntimeError('豆包无法访问本机地址。请配置 DOUBAO_PUBLIC_BASE_URL 为公网 HTTPS 地址。')
     return image_url
 
+def public_image_check_timeout():
+    try:
+        return max(1, int(os.getenv('DOUBAO_PUBLIC_URL_CHECK_TIMEOUT_SECONDS', '10')))
+    except ValueError:
+        return 10
+
+def ensure_public_image_accessible(image_url):
+    if os.getenv('DOUBAO_SKIP_PUBLIC_IMAGE_CHECK', 'false').lower() == 'true':
+        return
+
+    req = Request(image_url, headers={'User-Agent': 'AuralisHeadshot/1.0'}, method='HEAD')
+    try:
+        with urlopen(req, timeout=public_image_check_timeout()) as response:
+            content_type = response.headers.get('Content-Type', '')
+            if content_type and not content_type.startswith('image/'):
+                raise RuntimeError(
+                    f'豆包参考图公网地址返回的不是图片（Content-Type: {content_type}）：{image_url}'
+                )
+    except HTTPError as error:
+        raise RuntimeError(
+            f'豆包参考图公网地址不可访问（HTTP {error.code}）：{image_url}。'
+            '如果本地调试仍使用 URL 模式，请确认 ngrok 正在运行且指向当前 Flask 端口。'
+        ) from error
+    except URLError as error:
+        raise RuntimeError(
+            f'豆包参考图公网地址连接失败：{image_url}。'
+            f'原因：{error.reason}。'
+        ) from error
+
 def resolve_reference_image_url(source_path):
     override_url = os.getenv('DOUBAO_REFERENCE_IMAGE_URL')
     if override_url:
-        return validate_public_image_url(override_url)
+        image_url = validate_public_image_url(override_url)
+        ensure_public_image_accessible(image_url)
+        return image_url
 
     public_base_url = os.getenv('DOUBAO_PUBLIC_BASE_URL', '').strip().rstrip('/')
     if not public_base_url:
@@ -189,7 +230,17 @@ def resolve_reference_image_url(source_path):
             '并在 .env 中设置 DOUBAO_PUBLIC_BASE_URL。'
         )
 
-    return validate_public_image_url(public_base_url + photo_public_url(source_path))
+    image_url = validate_public_image_url(public_base_url + photo_public_url(source_path))
+    ensure_public_image_accessible(image_url)
+    return image_url
+
+def resolve_reference_image_input(source_path):
+    input_format = os.getenv('DOUBAO_INPUT_IMAGE_FORMAT', 'data_url').strip().lower()
+    if input_format in {'base64', 'data_url'}:
+        return image_to_base64(source_path)
+    if input_format == 'url':
+        return resolve_reference_image_url(source_path)
+    raise RuntimeError('DOUBAO_INPUT_IMAGE_FORMAT 仅支持 base64、data_url 或 url。')
 
 def build_headshot_prompt(label, style_config):
     crop_text = '半身职业头像' if style_config.get('crop') != 'full' else '全身职业形象照'
@@ -258,7 +309,7 @@ def call_doubao_seedream(source_path, label, style_config, target_path):
         api_url = base_url.rstrip('/') + '/images/generations'
 
     model = os.getenv('DOUBAO_MODEL', 'doubao-seedream-5-0-260128')
-    image_value = resolve_reference_image_url(source_path)
+    image_value = resolve_reference_image_input(source_path)
     body = {
         'model': model,
         'prompt': build_headshot_prompt(label, style_config),

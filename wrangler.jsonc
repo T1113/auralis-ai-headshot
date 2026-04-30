@@ -1,0 +1,30 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "impeccable-site",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-04-17",
+  "assets": {
+    "directory": "./形象照",
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    "run_worker_first": true
+  },
+  "vars": {
+    "APP_NAME": "Auralis 曜临",
+    "PUBLIC_SITE_NAME": "Auralis 曜临",
+    "SESSION_COOKIE_NAME": "impeccable_session"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "impeccable-db",
+      "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "UPLOADS",
+      "bucket_name": "impeccable-uploads"
+    }
+  ]
+}

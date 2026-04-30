@@ -1,0 +1,17 @@
+{
+  "name": "impeccable-cloudflare-site",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "cf:whoami": "wrangler whoami",
+    "db:create": "wrangler d1 create impeccable-db",
+    "db:migrate": "wrangler d1 migrations apply impeccable-db",
+    "r2:create": "wrangler r2 bucket create impeccable-uploads"
+  },
+  "devDependencies": {
+    "wrangler": "^4.40.1"
+  }
+}

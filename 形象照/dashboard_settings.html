@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>账户设置 - 控制台</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="./assets/css/system.css">
+    <link rel="stylesheet" href="./assets/css/layout.css">
+    <link rel="stylesheet" href="./assets/css/components.css">
+</head>
+<body>
+
+    <nav class="header-sticky" style="height: 64px; display: flex; align-items: center; border-bottom: 1px solid var(--color-border-subtle);">
+        <div class="container flex-row justify-between w-100" style="width: 100%;">
+            <div class="flex-row align-center">
+                <button class="btn btn-ghost" style="padding: 4px 8px; font-size: 1.2rem; border-radius: 4px; margin-right: 8px;" onclick="toggleSidebar()">☰</button>
+                <a href="index.html" style="font-weight: var(--weight-semibold); font-size: 1.1rem; color: var(--color-text-primary); text-decoration: none;">Auralis<span style="color:var(--color-text-secondary); margin-left: 6px; font-size: .82em; letter-spacing: .08em;">曜临</span></a>
+            </div>
+            
+            <div class="user-dropdown-container">
+                <div class="flex-row gap-sm align-center" style="cursor: pointer; padding: 4px;">
+                    <span id="user-display-name" style="font-size: var(--text-small); color: var(--color-text-secondary); font-weight: var(--weight-medium);">加载中...</span>
+                    <div style="width: 32px; height: 32px; background-color: var(--color-border-strong); color: var(--color-text-inverse); display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold;" id="user-avatar-letter">U</div>
+                <div class="user-dropdown-menu">
+                    <div style="font-weight: var(--weight-medium); margin-bottom: var(--space-4);">当前可用额度</div>
+                    <div class="flex-row justify-between align-center">
+                        <span style="font-size: 1.5rem; color: var(--color-text-primary); font-family: var(--font-sans); font-weight: var(--weight-semibold);">20 <span style="font-size: var(--text-small); color: var(--color-text-secondary); font-weight: normal;">点</span></span>
+                        <span class="badge badge-success">专业版会员</span>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <div style="font-size: var(--text-small); color: var(--color-text-secondary); margin-bottom: var(--space-12);">生成 1 张 4K 极清照片消耗 1 点积分。</div>
+                    <a href="dashboard_assets.html" class="btn btn-secondary" style="width: 100%; padding: 8px; font-size: 14px; margin-bottom: 8px;">补充额度记录</a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" onclick="executeLogout()" style="color: var(--color-status-error); text-decoration: none; font-size: var(--text-small); display: block; text-align: center;">退出账号</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container dashboard-layout" id="dash-grid" style="transition: grid-template-columns 0.3s ease;">
+        <aside class="sidebar" id="dashboard-sidebar" style="display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; transition: opacity 0.2s ease;">
+            <div style="min-width: 200px;">
+                <a href="dashboard.html" class="nav-item">我的形象库</a>
+                <a href="dashboard_assets.html" class="nav-item">资产与订单</a>
+                <a href="dashboard_settings.html" class="nav-item active">账户设置</a>
+                <a href="dashboard_privacy.html" class="nav-item">隐私与数据控制</a>
+                <div style="height: 1px; background-color: var(--color-border-subtle); margin: var(--space-8) 0;"></div>
+                <a href="admin.html" class="nav-item" data-admin-only style="display: none; color: var(--color-status-success); font-weight: var(--weight-medium);"><span style="margin-right:8px;">★</span>高管数据中心</a>
+                <a href="support.html" class="nav-item" style="color: var(--color-text-tertiary);"><span style="margin-right:8px;">📞</span>联系人工客服</a>
+            </div>
+        </aside>
+
+        <main class="content-area">
+            <h1 class="mb-lg" style="font-size: var(--text-h2);">账户基本资料</h1>
+            <div class="card" style="max-width: 600px;">
+                <div class="form-floating mb-lg">
+                    <input type="email" value="已绑定的加密邮箱" disabled style="background: var(--color-surface-subtle); cursor: not-allowed; border: 1px dotted var(--color-border-subtle);">
+                    <label>注册邮箱与登陆凭据</label>
+                </div>
+                <div class="form-floating mb-lg">
+                    <input type="password" placeholder=" ">
+                    <label>设置新密码</label>
+                </div>
+                <button class="btn btn-secondary" onclick="alert('密码更新请求已提交')">保存更新</button>
+            </div>
+        </main>
+    </div>
+
+    <script src="./assets/js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const session = await window.ImpeccableApp.requireAuth('login.html');
+                window.ImpeccableApp.applyRoleVisibility(session);
+                const userName = session.user.name;
+                document.getElementById('user-display-name').innerText = userName;
+                document.getElementById('user-avatar-letter').innerText = userName.charAt(0).toUpperCase();
+            } catch (_error) {
+                // Redirect handled in helper.
+            }
+        });
+        function executeLogout() {
+            window.ImpeccableApp.logout('index.html');
+        }
+        function toggleSidebar() {
+            const sidebar = document.getElementById('dashboard-sidebar');
+            const grid = document.getElementById('dash-grid');
+            if (sidebar.style.opacity === '0') {
+                sidebar.style.opacity = '1'; setTimeout(() => sidebar.style.display = 'flex', 10); grid.style.gridTemplateColumns = '240px 1fr';
+            } else {
+                sidebar.style.opacity = '0'; setTimeout(() => sidebar.style.display = 'none', 200); grid.style.gridTemplateColumns = '0px 1fr';
+            }
+        }
+    </script>
+</body>
+</html>

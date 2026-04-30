@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生成预览确认 - AI 职业形象照</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="./assets/css/system.css">
+    <link rel="stylesheet" href="./assets/css/layout.css">
+    <link rel="stylesheet" href="./assets/css/components.css">
+
+    <style>
+        /* Toolbar Sticky underneath nav */
+        .result-toolbar {
+            position: sticky;
+            top: 64px;
+            z-index: 40;
+            background-color: var(--color-surface-pure);
+            border-bottom: 1px solid var(--color-border-subtle);
+            padding: var(--space-16) 0;
+            transition: all 0.3s ease;
+        }
+
+        .filter-scroll {
+            display: flex;
+            gap: var(--space-8);
+            overflow-x: auto;
+            scrollbar-width: none; 
+        }
+        .filter-scroll::-webkit-scrollbar { display: none; }
+
+        .filter-tag {
+            white-space: nowrap;
+            padding: var(--space-8) var(--space-16);
+            border-radius: var(--radius-full);
+            background-color: var(--color-surface-subtle);
+            color: var(--color-text-secondary);
+            font-size: var(--text-small);
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .filter-tag.active {
+            background-color: var(--color-text-primary);
+            color: var(--color-surface-pure);
+        }
+
+        /* Result Grid */
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: var(--space-24);
+            padding: var(--space-32) 0;
+        }
+
+        .result-card {
+            position: relative;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            background-color: var(--color-surface-subtle);
+            aspect-ratio: 3/4;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--color-border-subtle);
+            transform: translateY(12px);
+            opacity: 0;
+            animation: cardIn 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transition: transform 0.24s ease, border-color 0.24s ease, box-shadow 0.24s ease;
+        }
+
+        .result-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--color-border-strong);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .result-image {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.6) 100%);
+            display: flex;
+            align-items: flex-end;
+            padding: var(--space-16);
+            position: relative;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .result-image::after {
+            content: "";
+            position: absolute;
+            inset: 45% 0 0;
+            background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.68));
+            pointer-events: none;
+        }
+
+        .result-label {
+            color: #fff;
+            font-size: var(--text-small);
+            font-weight: var(--weight-medium);
+            z-index: 10; /* Above watermark */
+        }
+
+        .result-meta {
+            position: absolute;
+            top: var(--space-12);
+            left: var(--space-12);
+            right: var(--space-12);
+            z-index: 12;
+            display: flex;
+            justify-content: space-between;
+            gap: var(--space-8);
+            align-items: flex-start;
+        }
+
+        .result-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-4);
+            padding: 5px 8px;
+            border-radius: var(--radius-full);
+            background-color: rgba(255,255,255,.86);
+            color: var(--color-text-primary);
+            font-size: 0.72rem;
+            font-weight: var(--weight-medium);
+            backdrop-filter: blur(10px);
+        }
+
+        .result-empty {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            place-items: center;
+            padding: var(--space-24);
+            text-align: center;
+            color: var(--color-text-secondary);
+            background:
+                linear-gradient(135deg, oklch(0.96 0.01 260), oklch(0.9 0.02 230));
+        }
+
+        @keyframes cardIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* --- WATERMARK SYSTEM --- */
+        .watermark-layer {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none; /* Let clicks pass through */
+            z-index: 5;
+            background-image: repeating-linear-gradient(
+                -45deg,
+                rgba(255, 255, 255, 0.1),
+                rgba(255, 255, 255, 0.1) 20px,
+                transparent 20px,
+                transparent 40px
+            );
+        }
+        
+        .watermark-text {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 2rem;
+            font-weight: 700;
+            transform: rotate(-30deg);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            user-select: none;
+            backdrop-filter: blur(2px);
+            padding: 10px 20px;
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+        }
+
+        .security-banner {
+            background: linear-gradient(to right, oklch(0.96 0.02 260), oklch(0.98 0.01 260));
+            border: 1px solid var(--color-border-strong);
+            padding: var(--space-16) var(--space-24);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-24);
+            margin-top: var(--space-24);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+        }
+
+        .security-banner > div {
+            min-width: 0;
+        }
+
+        #generation-copy {
+            overflow-wrap: anywhere;
+        }
+
+        .security-banner .flex-row,
+        .result-nav-actions {
+            flex-wrap: wrap;
+        }
+
+        /* --- LIGHTBOX MODAL --- */
+        .lightbox-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            display: none; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        .lightbox-overlay.open { display: flex; opacity: 1; }
+        
+        .lightbox-content {
+            display: flex; flex-direction: column; align-items: center; gap: var(--space-24);
+            max-width: 90vw; max-height: 90vh;
+            transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .lightbox-overlay.open .lightbox-content { transform: scale(1); }
+        
+        .lightbox-img-wrapper {
+            position: relative;
+            border-radius: var(--radius-lg); overflow: hidden;
+            background-color: var(--color-surface-subtle);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+        
+        /* 模拟大图尺寸 */
+        .lightbox-img {
+            width: 400px; height: 533px; display: flex; align-items: flex-end; padding: var(--space-24);
+            background: linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.6) 100%);
+            background-size: cover;
+            background-position: center;
+        }
+
+        .lightbox-actions { display: flex; gap: var(--space-16); flex-wrap: wrap; justify-content: center; }
+        .close-lightbox {
+            position: absolute; top: var(--space-24); right: var(--space-32);
+            font-size: 2.5rem; color: white; cursor: pointer; opacity: 0.7; transition: opacity 0.2s;
+            z-index: 10000;
+        }
+        .close-lightbox:hover { opacity: 1; }
+
+        @media (max-width: 768px) {
+            .result-grid { grid-template-columns: repeat(2, 1fr); gap: var(--space-12); }
+            .security-banner { flex-direction: column; align-items: stretch; text-align: left; }
+            .security-banner .flex-row { flex-direction: column; align-items: stretch; }
+            .security-banner .btn { width: 100%; }
+            .result-nav-actions { justify-content: flex-end; }
+            .watermark-text { font-size: 1.2rem; }
+            .lightbox-img { width: 85vw; height: 113vw; }
+            .lightbox-actions { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="header-sticky" style="height: 64px; display: flex; align-items: center; border-bottom: none;">
+        <div class="container flex-row justify-between w-100" style="width: 100%;">
+            <a href="index.html" style="font-weight: var(--weight-semibold); font-size: 1.1rem; color: var(--color-text-primary); text-decoration: none;">Auralis<span style="color:var(--color-text-secondary); margin-left: 6px; font-size: .82em; letter-spacing: .08em;">曜临</span></a>
+            
+            <!-- Unlocked Actions Area -->
+            <div class="result-nav-actions" id="unlocked-nav-actions" style="display: none; align-items: center; gap: var(--space-8);">
+            <!-- Dashboard Link -->
+            <button class="btn btn-ghost" style="padding: 6px 12px; font-size: 14px;" onclick="window.location.href='dashboard.html'">进入控制台</button>
+            
+            <!-- Download Dropdown -->
+            <div style="position: relative; display: inline-block;" class="download-dropdown-container">
+                <button class="btn btn-primary" style="padding: 6px 12px; font-size: 14px;" onclick="toggleDownloadMenu()">
+                    <span class="icon" id="nav-download-icon"></span>选择导出格式
+                </button>
+                <div id="download-menu" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 8px; background: white; border: 1px solid var(--color-border-subtle); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); width: 200px; z-index: 100; flex-direction: column; overflow: hidden;">
+                    <button class="dropdown-item" onclick="downloadArchive('zip')" style="padding: 12px 16px; display: block; width:100%; text-align:left; background:none; border:none; color: var(--color-text-primary); border-bottom: 1px solid var(--color-border-subtle); font-size: 14px; cursor:pointer;">打包下载静态图全集</button>
+                    <button class="dropdown-item" onclick="downloadArchive('motion')" style="padding: 12px 16px; display: block; width:100%; text-align:left; background:none; border:none; color: var(--color-text-primary); font-size: 14px; cursor:pointer;">导出动态特写合集</button>
+                </div>
+            </div>
+        </div>
+        </div>
+    </nav>
+
+    <style>
+        .dropdown-item:hover { background-color: var(--color-surface-subtle); }
+    </style>
+
+    <script>
+        function toggleDownloadMenu() {
+            const menu = document.getElementById('download-menu');
+            if (menu.style.display === 'none') {
+                menu.style.display = 'flex';
+            } else {
+                menu.style.display = 'none';
+            }
+        }
+    </script>
+
+    <main class="container mb-xl">
+        
+        <!-- Paid Result Banner -->
+        <div class="security-banner" id="security-banner">
+            <div>
+                <h3 class="mb-sm" style="font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                    <span class="icon" id="banner-status-icon" style="color: var(--color-status-success);"></span> <span id="banner-title">本次生成已扣除积分</span>
+                </h3>
+                <p id="generation-copy" style="margin: 0; font-size: var(--text-small); color: var(--color-text-secondary); line-height: 1.6;">
+                    生成任务创建时已扣除 <strong style="color: var(--color-text-primary);" id="charged-credit-count">100</strong> 积分。当前结果无需二次付费或解锁；如果对妆容或风格不满意，您还有 
+                    <strong style="color: var(--color-text-primary);" id="retry-count">2</strong> 次免费重新重绘的机会。
+                </p>
+            </div>
+            <div class="flex-row gap-sm">
+                <button class="btn btn-ghost" onclick="requestRegenerate()" id="btn-regen">不满意，重抽一次</button>
+                <button class="btn btn-primary" id="btn-save-library" onclick="saveToLibrary()" style="background-color: var(--color-text-primary);">满意，保存到形象库</button>
+            </div>
+        </div>
+
+        <div class="flex-row justify-between align-center" style="margin-top: var(--space-48);">
+            <h1 style="font-size: var(--text-h3);" id="gallery-title">您的职业形象结果</h1>
+            <span style="font-size: var(--text-small); color: var(--color-text-tertiary);" id="gallery-sub">点击任意图片进入单片操作模式</span>
+        </div>
+
+        <div class="result-grid" id="result-grid">
+            <!-- Repeated blocks (Updated with onClick bindings) -->
+            <!-- 1 -->
+            <div class="result-card" onclick="openLightbox('经典商务浅灰底', 'var(--color-border-subtle)')" style="cursor: pointer;">
+                <div class="result-image" style="background-color: var(--color-border-subtle);">
+                    <div class="watermark-layer"><div class="watermark-text">预览试看</div></div>
+                    <span class="result-label">经典商务浅灰底</span>
+                </div>
+            </div>
+            <!-- 2 -->
+            <div class="result-card" onclick="openLightbox('领英专属蓝底', 'var(--color-border-strong)')" style="cursor: pointer;">
+                <div class="result-image" style="background-color: var(--color-border-strong);">
+                    <div class="watermark-layer"><div class="watermark-text">预览试看</div></div>
+                    <span class="result-label">领英专属蓝底</span>
+                </div>
+            </div>
+            <!-- 3 -->
+            <div class="result-card" onclick="openLightbox('自然光高级灰', 'oklch(0.95 0.01 260)')" style="cursor: pointer;">
+                <div class="result-image" style="background-color: oklch(0.95 0.01 260);">
+                    <div class="watermark-layer"><div class="watermark-text">预览试看</div></div>
+                    <span class="result-label">自然光高级灰</span>
+                </div>
+            </div>
+            <!-- 4 -->
+            <div class="result-card" onclick="openLightbox('暖光极简白', 'var(--color-surface-subtle)')" style="cursor: pointer;">
+                <div class="result-image" style="background-color: var(--color-surface-subtle);">
+                    <div class="watermark-layer"><div class="watermark-text">预览试看</div></div>
+                    <span class="result-label">暖光极简白</span>
+                </div>
+            </div>
+            <!-- 5 -->
+            <div class="result-card" onclick="openLightbox('户外虚化自然光', 'var(--color-border-strong)')" style="cursor: pointer;">
+                <div class="result-image" style="background-color: var(--color-border-strong);">
+                    <div class="watermark-layer"><div class="watermark-text">预览试看</div></div>
+                    <span class="result-label">户外虚化自然光</span>
+                </div>
+            </div>
+            <!-- 6 -->
+            <div class="result-card" onclick="openLightbox('黑白电影质感', 'var(--color-border-subtle)')" style="cursor: pointer;">
+                <div class="result-image" style="background-color: var(--color-border-subtle);">
+                    <div class="watermark-layer"><div class="watermark-text">预览试看</div></div>
+                    <span class="result-label">黑白电影质感</span>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Lightbox Modal Viewer -->
+    <div class="lightbox-overlay" id="lightbox">
+        <div class="close-lightbox" onclick="closeLightbox()">✕</div>
+        <div class="lightbox-content">
+            <div class="lightbox-img-wrapper">
+                <div id="lightbox-watermark" class="watermark-layer"><div class="watermark-text" style="font-size: 3rem;">预览试看</div></div>
+                <div id="lightbox-img" class="lightbox-img">
+                    <span class="result-label" id="lightbox-img-label" style="font-size: 1.2rem;">经典商务浅灰底</span>
+                </div>
+            </div>
+            
+            <div class="lightbox-actions" id="lightbox-locked-actions">
+                <span style="color: rgba(255,255,255,0.7); font-size: var(--text-small); text-align: center;">本次生成已扣除积分，可直接使用下方导出功能。</span>
+            </div>
+            
+            <div class="lightbox-actions" id="lightbox-unlocked-actions" style="display: none;">
+                <button class="btn btn-secondary" onclick="downloadSelectedResult('jpg')"><span class="icon" id="lightbox-download-icon"></span>下载高清图</button>
+                <button class="btn btn-secondary" onclick="downloadSelectedResult('background')">下载去背景 PNG</button>
+                <button class="btn btn-primary" onclick="downloadSelectedResult('motion')">导出动态名片</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="./assets/js/app.js"></script>
+    <script>
+        let retries = 2;
+        let isAssetsUnlocked = true;
+        let currentResults = [];
+        let currentJob = null;
+        let currentSelectedResult = null;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentBatchId = urlParams.get("batchId") || sessionStorage.getItem("impeccable_current_job_id");
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            try {
+                await window.ImpeccableApp.requireAuth("login.html");
+            } catch (_error) {
+                return;
+            }
+
+            if (!currentBatchId) {
+                window.location.href = "dashboard.html";
+                return;
+            }
+
+            try {
+                await loadJob();
+            } catch (error) {
+                window.ImpeccableApp.showToast(error.message || "结果加载失败，请返回控制台重试。", "error");
+                window.setTimeout(() => {
+                    window.location.href = "dashboard.html";
+                }, 1400);
+            }
+        });
+
+        async function loadJob() {
+            const response = await window.ImpeccableApp.apiFetch("/api/jobs/" + encodeURIComponent(currentBatchId));
+            const job = response.job;
+            currentJob = job;
+            retries = Number(job.freeRegenerationsRemaining || 0);
+            document.getElementById("retry-count").innerText = retries;
+            document.getElementById("charged-credit-count").innerText = Number(job.generationCostCredits || 100);
+            currentResults = job.results || [];
+            hydrateGenerationDisclosure(job);
+            renderResultGrid(currentResults);
+            executePaidResultUI();
+        }
+
+        function renderResultGrid(results) {
+            const grid = document.getElementById("result-grid");
+
+            grid.innerHTML = results.map((result, index) => `
+                <div class="result-card" onclick="openLightboxByIndex(${index})" style="cursor: pointer; animation-delay:${Math.min(index * 45, 240)}ms;">
+                    ${result.imageUrl ? `
+                        <div class="result-image" style="background-image: url('${escapeAttribute(result.imageUrl || "")}');">
+                            <div class="result-meta">
+                                <span class="result-chip">${result.referenceOnly ? "参考预览" : "AI 成片"}</span>
+                                <span class="result-chip">${escapeHtml(result.provider || "provider")}</span>
+                            </div>
+                            <span class="result-label">${escapeHtml(result.label)}</span>
+                        </div>
+                    ` : `
+                        <div class="result-empty">
+                            <div>
+                                <div class="icon" style="width:28px;height:28px;margin:0 auto var(--space-12);">${window.ImpeccableApp.iconSvg("spark")}</div>
+                                <strong>等待生成结果</strong>
+                                <p style="margin: var(--space-8) 0 0; font-size: var(--text-small);">${escapeHtml(result.message || "图像服务正在处理。")}</p>
+                            </div>
+                        </div>
+                    `}
+                </div>
+            `).join("");
+        }
+
+        function hydrateGenerationDisclosure(job) {
+            const disclosure = job.generation || {};
+            const icon = document.getElementById("banner-status-icon");
+            const copy = document.getElementById("generation-copy");
+            const title = document.getElementById("banner-title");
+            const banner = document.getElementById("security-banner");
+            icon.innerHTML = window.ImpeccableApp.iconSvg(disclosure.referenceOnly ? "info" : "check");
+
+            if (disclosure.referenceOnly) {
+                title.innerText = "当前为参考预览模式";
+                banner.style.borderColor = "var(--color-status-warning)";
+                copy.innerHTML = `生成任务已扣除 <strong style="color:var(--color-text-primary);" id="charged-credit-count">${Number(job.generationCostCredits || 100)}</strong> 积分，但当前环境还未配置图像生成服务。页面展示上传参考图并保留真实下载、重绘、保存链路；正式成片需要接入：${(disclosure.requiredConfig || []).map(escapeHtml).join("、")}。`;
+                window.ImpeccableApp.showToast("图像生成服务未配置，当前显示参考预览。", "info");
+                return;
+            }
+
+            title.innerText = "本次生成已扣除积分";
+            copy.innerHTML = `生成任务创建时已扣除 <strong style="color: var(--color-text-primary);" id="charged-credit-count">${Number(job.generationCostCredits || 100)}</strong> 积分。当前结果无需二次付费或解锁；如果对妆容或风格不满意，您还有 <strong style="color: var(--color-text-primary);" id="retry-count">${retries}</strong> 次免费重绘机会。`;
+        }
+
+        async function requestRegenerate() {
+            if (retries <= 0) {
+                window.ImpeccableApp.showToast("免费重绘次数已用完。如需进一步处理，请联系人工支持。", "error");
+                return;
+            }
+
+            const confirmed = confirm(`重绘将会完全丢弃这一批结果，根据你上一步的上传参数重新在底层流转一次。\n\n你还剩 ${retries} 次机会。确认要丢弃并重绘吗？`);
+            if (!confirmed) {
+                return;
+            }
+
+            try {
+                const response = await window.ImpeccableApp.apiFetch("/api/jobs/" + encodeURIComponent(currentBatchId) + "/regenerate", {
+                    method: "POST"
+                });
+                retries = Number(response.freeRegenerationsRemaining || 0);
+                const retryCount = document.getElementById("retry-count");
+                if (retryCount) {
+                    retryCount.innerText = retries;
+                }
+                window.location.href = "generating.html?jobId=" + encodeURIComponent(currentBatchId);
+            } catch (error) {
+                window.ImpeccableApp.showToast(error.message || "重绘失败，请稍后重试。", "error");
+            }
+        }
+
+        async function unlockAssets() {
+            executePaidResultUI();
+        }
+
+        async function saveToLibrary() {
+            const button = document.getElementById("btn-save-library");
+            button.disabled = true;
+            button.innerText = "正在保存...";
+
+            try {
+                await window.ImpeccableApp.apiFetch("/api/jobs/" + encodeURIComponent(currentBatchId) + "/unlock", {
+                    method: "POST"
+                });
+                window.ImpeccableApp.showToast("已保存到形象库。", "success");
+                window.location.href = "dashboard.html";
+            } catch (error) {
+                button.disabled = false;
+                button.innerText = "满意，保存到形象库";
+                window.ImpeccableApp.showToast(error.message || "保存失败，请稍后再试。", "error");
+            }
+        }
+
+        function executePaidResultUI() {
+            if (isAssetsUnlocked) {
+                document.getElementById("unlocked-nav-actions").style.display = "flex";
+                return;
+            }
+
+            document.querySelectorAll(".watermark-layer").forEach((watermark) => {
+                watermark.style.transition = "opacity 0.6s ease, transform 0.6s ease";
+                watermark.style.opacity = "0";
+                watermark.style.transform = "scale(1.5)";
+                setTimeout(() => {
+                    if (watermark.parentNode) {
+                        watermark.remove();
+                    }
+                }, 600);
+            });
+
+            isAssetsUnlocked = true;
+            document.getElementById("security-banner").style.borderColor = "var(--color-status-success)";
+            document.getElementById("gallery-title").innerText = "您的绝佳职业形象";
+            document.getElementById("gallery-sub").innerText = "点击任意图片进入单片操作模式";
+            document.getElementById("unlocked-nav-actions").style.display = "flex";
+        }
+
+        function openLightboxByIndex(index) {
+            const result = currentResults[index];
+            if (!result) {
+                return;
+            }
+            currentSelectedResult = result;
+
+            const lightbox = document.getElementById("lightbox");
+            const lightboxImg = document.getElementById("lightbox-img");
+            const lightboxLabel = document.getElementById("lightbox-img-label");
+            const lightboxWatermark = document.getElementById("lightbox-watermark");
+
+            lightboxImg.style.backgroundImage = result.imageUrl ? `url("${result.imageUrl}")` : "none";
+            lightboxImg.style.backgroundSize = "cover";
+            lightboxImg.style.backgroundPosition = "center";
+            lightboxLabel.innerText = result.label;
+
+            lightboxWatermark.style.display = "none";
+            document.getElementById("lightbox-locked-actions").style.display = "none";
+            document.getElementById("lightbox-unlocked-actions").style.display = "flex";
+
+            lightbox.classList.add("open");
+        }
+
+        function closeLightbox() {
+            document.getElementById("lightbox").classList.remove("open");
+        }
+
+        async function downloadSelectedResult(variant) {
+            if (!currentSelectedResult) {
+                window.ImpeccableApp.showToast("请先选择一张结果图。", "error");
+                return;
+            }
+
+            await downloadResult(currentSelectedResult, variant);
+        }
+
+        async function downloadResult(result, variant) {
+            const exportUrl = result.exportUrls && result.exportUrls[variant];
+            if (!exportUrl) {
+                window.ImpeccableApp.showToast("该结果暂时没有可下载文件。", "error");
+                return;
+            }
+
+            if (variant === "jpg") {
+                window.location.href = exportUrl;
+                window.ImpeccableApp.showToast(result.referenceOnly ? "正在下载上传参考图。" : "正在下载高清结果。", "success");
+                return;
+            }
+
+            try {
+                await window.ImpeccableApp.apiFetch(exportUrl);
+            } catch (error) {
+                window.ImpeccableApp.showToast(error.message || "该导出能力尚未接入。", "error");
+            }
+        }
+
+        async function downloadArchive(format) {
+            const menu = document.getElementById("download-menu");
+            menu.style.display = "none";
+            try {
+                await window.ImpeccableApp.apiFetch("/api/jobs/" + encodeURIComponent(currentBatchId) + "/download?format=" + encodeURIComponent(format));
+            } catch (error) {
+                window.ImpeccableApp.showToast(error.message || "批量导出暂不可用。", "error");
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById("nav-download-icon").innerHTML = window.ImpeccableApp.iconSvg("archive");
+            document.getElementById("lightbox-download-icon").innerHTML = window.ImpeccableApp.iconSvg("download");
+        });
+
+        function escapeHtml(value) {
+            return String(value || "")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#39;");
+        }
+
+        function escapeAttribute(value) {
+            return escapeHtml(value);
+        }
+    </script>
+</body>
+</html>

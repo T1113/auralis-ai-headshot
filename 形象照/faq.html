@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>常见问题 - Auralis 曜临</title>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./assets/css/system.css">
+    <link rel="stylesheet" href="./assets/css/layout.css">
+    <link rel="stylesheet" href="./assets/css/components.css">
+    <style>
+        .faq-item {
+            border-bottom: 1px solid var(--color-border-subtle);
+            padding: var(--space-24) 0;
+        }
+        .faq-title {
+            font-size: var(--text-h3);
+            font-weight: var(--weight-medium);
+            margin-bottom: var(--space-8);
+        }
+        .faq-ans {
+            color: var(--color-text-secondary);
+            font-size: var(--text-body);
+        }
+    </style>
+</head>
+<body>
+    <nav class="header-sticky" style="height: 64px; display: flex; align-items: center; border-bottom: 1px solid var(--color-border-subtle);">
+        <div class="container flex-row justify-between w-100" style="width: 100%;">
+            <a href="index.html" style="font-weight: var(--weight-semibold); font-size: 1.1rem; color: var(--color-text-primary);">Auralis<span style="color:var(--color-text-secondary); margin-left: 6px; font-size: .82em; letter-spacing: .08em;">曜临</span></a>
+            <a href="login.html" class="btn btn-ghost" style="padding: 6px 12px; font-size: 14px;">解决问题后去体验</a>
+        </div>
+    </nav>
+    <main class="container mb-xl" style="padding-top: var(--space-64); max-width: 800px;">
+        <h1 class="mb-xl" style="font-size: var(--text-h1);">常见问题与解答</h1>
+        
+        <div class="faq-item">
+            <div class="faq-title">Q: 照片生成出来会不会完全不像我？</div>
+            <div class="faq-ans">这是我们最核心突破的痛点。我们不像主流应用那样进行“粗暴换脸”，而是利用空间特征提取，100% 保留您的头骨结构、眼距、和原本的发迹线，仅重塑棚拍光影及服饰材质。如果依然觉得有失真感，您可以使用免费“重新微调”功能。</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-title">Q: 需要上传多少张图片？格式有什么要求？</div>
+            <div class="faq-ans">为追求极速体验，仅需 1~5 张照片即可。支持您的手机自拍直出 (JPG, PNG, 以及苹果原生的 HEIC 格式均在支持之列)。需要注意的是：脸部不能有大面积遮挡。</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-title">Q: 下载的照片够我去照相馆打印吗？</div>
+            <div class="faq-ans">专业版用户可以下载 4K 超清分辨率（长边大于 4000 像素）的无损级别图片，它的 DPI 和细节经得起任何高清商业海报或大幅面冲印输出的考验。</div>
+        </div>
+         <div class="faq-item">
+            <div class="faq-title">Q: 支付后没收到结果怎么办？</div>
+            <div class="faq-ans">由于服务器队列拥挤，有时生成需要 2-5 分钟。您可以放心地关闭页面稍后再来，一旦渲染完毕我们会向您的注册邮箱或微信发送回调推送通知。</div>
+        </div>
+    </main>
+</body>
+</html>

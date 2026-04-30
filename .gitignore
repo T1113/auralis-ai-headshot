@@ -4,6 +4,7 @@ node_modules
 dist
 npm-debug.log*
 .env
+.dev.vars
 .venv
 __pycache__
 *.pyc

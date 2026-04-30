@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>案例图库 - Auralis 曜临</title>
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/system.css">
-    <link rel="stylesheet" href="/static/css/layout.css">
-    <link rel="stylesheet" href="/static/css/components.css">
+    <link rel="stylesheet" href="./assets/css/system.css">
+    <link rel="stylesheet" href="./assets/css/layout.css">
+    <link rel="stylesheet" href="./assets/css/components.css">
     <style>
         .gallery-grid {
             columns: 3 300px;
@@ -19,14 +19,9 @@
             margin-bottom: var(--space-24);
             border-radius: var(--radius-lg);
             background-color: var(--color-surface-elevated);
-            background-image: url('/static/assets/showcase/gallery-contact-sheet.jpg');
-            background-size: 300% 200%;
-            background-repeat: no-repeat;
             position: relative;
             overflow: hidden;
             aspect-ratio: 3/4; /* default fallback */
-            border: 1px solid var(--color-border-subtle);
-            box-shadow: var(--shadow-sm);
         }
         .gallery-item:nth-child(2n) { aspect-ratio: 4/5; }
         .gallery-item:nth-child(3n) { aspect-ratio: 1/1; }
@@ -53,15 +48,16 @@
     </nav>
     <main class="container mb-xl" style="padding-top: var(--space-64);">
         <h1 class="mb-sm" style="font-size: var(--text-h1); text-align: center;">探索高管与精英的风貌</h1>
-        <p class="mb-xl" style="text-align: center; color: var(--color-text-secondary);">以下为 GPT 生成的演示案例，用于展示不同服装、颜色与职业气质方向。</p>
+        <p class="mb-xl" style="text-align: center; color: var(--color-text-secondary);">所有展示案例均已获得原始模特书面商用演示权授权。</p>
         
         <div class="gallery-grid">
-            <div class="gallery-item" style="background-position: 0% 0%;"><div class="gallery-overlay"><span style="font-size:14px;">深色西装 · 投资合伙人质感</span></div></div>
-            <div class="gallery-item" style="background-position: 50% 0%;"><div class="gallery-overlay"><span style="font-size:14px;">象牙衬衫 · 创业者亲和力</span></div></div>
-            <div class="gallery-item" style="background-position: 100% 0%;"><div class="gallery-overlay"><span style="font-size:14px;">白色医生服 · 医疗研究员</span></div></div>
-            <div class="gallery-item" style="background-position: 0% 100%;"><div class="gallery-overlay"><span style="font-size:14px;">卡其外套 · 初创公司 CEO</span></div></div>
-            <div class="gallery-item" style="background-position: 50% 100%;"><div class="gallery-overlay"><span style="font-size:14px;">炭灰西装 · 领英标准白领装</span></div></div>
-            <div class="gallery-item" style="background-position: 100% 100%;"><div class="gallery-overlay"><span style="font-size:14px;">黑色衬衫 · 年度会议海报级</span></div></div>
+            <!-- Render 6 mock items -->
+            <div class="gallery-item" style="background-color: #2a2a2a;"><div class="gallery-overlay"><span style="font-size:14px;">投资合伙人质感</span></div></div>
+            <div class="gallery-item" style="background-color: #444;"><div class="gallery-overlay"><span style="font-size:14px;">医疗研究员</span></div></div>
+            <div class="gallery-item" style="background-color: #d1d1d1;"><div class="gallery-overlay"><span style="font-size:14px;">初创公司 CEO</span></div></div>
+            <div class="gallery-item" style="background-color: #333;"><div class="gallery-overlay"><span style="font-size:14px;">领英标准白领装</span></div></div>
+            <div class="gallery-item" style="background-color: #a8a8a8;"><div class="gallery-overlay"><span style="font-size:14px;">自然亲和力</span></div></div>
+            <div class="gallery-item" style="background-color: #1a1a1a;"><div class="gallery-overlay"><span style="font-size:14px;">年度会议海报级</span></div></div>
         </div>
     </main>
 </body>

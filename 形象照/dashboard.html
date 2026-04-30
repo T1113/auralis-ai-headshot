@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>控制台 - AI 职业形象照</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="./assets/css/system.css">
+    <link rel="stylesheet" href="./assets/css/layout.css">
+    <link rel="stylesheet" href="./assets/css/components.css">
+
+    <style>
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: var(--space-24);
+        }
+        .gallery-item {
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            background-color: var(--color-surface-pure);
+            border: 1px solid var(--color-border-subtle);
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .gallery-item:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+        }
+        .gallery-mock-img {
+            aspect-ratio: 3/4;
+            display: flex;
+            align-items: flex-end;
+            padding: var(--space-16);
+            background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.6) 100%);
+            position: relative;
+        }
+        .gallery-info {
+            padding: var(--space-12) var(--space-16);
+            border-top: 1px solid var(--color-border-subtle);
+        }
+        .watermark-overlay {
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            display: flex; align-items: center; justify-content: center;
+            background-image: repeating-linear-gradient(-45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.1) 15px, transparent 15px, transparent 30px);
+            z-index: 5;
+        }
+        .watermark-tag {
+            color: rgba(255,255,255,0.8); font-size: 1.2rem; font-weight: 700;
+            transform: rotate(-30deg); border: 2px dashed rgba(255,255,255,0.5); padding: 4px 12px; border-radius: 4px; backdrop-filter: blur(2px);
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="header-sticky" style="height: 64px; display: flex; align-items: center; border-bottom: 1px solid var(--color-border-subtle);">
+        <div class="container flex-row justify-between w-100" style="width: 100%;">
+            <div class="flex-row align-center">
+                <button class="btn btn-ghost" style="padding: 4px 8px; font-size: 1.2rem; border-radius: 4px; margin-right: 8px;" onclick="toggleSidebar()">☰</button>
+                <a href="index.html" style="font-weight: var(--weight-semibold); font-size: 1.1rem; color: var(--color-text-primary); text-decoration: none;">Auralis<span style="color:var(--color-text-secondary); margin-left: 6px; font-size: .82em; letter-spacing: .08em;">曜临</span></a>
+            </div>
+            
+            <div class="user-dropdown-container">
+                <div class="flex-row gap-sm align-center" style="cursor: pointer; padding: 4px;">
+                    <span id="user-display-name" style="font-size: var(--text-small); color: var(--color-text-secondary); font-weight: var(--weight-medium);">加载中...</span>
+                    <div style="width: 32px; height: 32px; background-color: var(--color-border-strong); color: var(--color-text-inverse); display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold;" id="user-avatar-letter">U</div>
+                </div>
+                <div class="user-dropdown-menu">
+                    <div style="font-weight: var(--weight-medium); margin-bottom: var(--space-4);">当前可用额度</div>
+                    <div class="flex-row justify-between align-center">
+                        <span style="font-size: 1.5rem; color: var(--color-text-primary); font-family: var(--font-sans); font-weight: var(--weight-semibold);">20 <span style="font-size: var(--text-small); color: var(--color-text-secondary); font-weight: normal;">点</span></span>
+                        <span class="badge badge-success">专业版会员</span>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <div style="font-size: var(--text-small); color: var(--color-text-secondary); margin-bottom: var(--space-12);">生成 1 张 4K 极清照片消耗 1 点积分。</div>
+                    <a href="dashboard_assets.html" class="btn btn-secondary" style="width: 100%; padding: 8px; font-size: 14px; margin-bottom: 8px;">补充积分记录</a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" onclick="executeLogout()" style="color: var(--color-status-error); text-decoration: none; font-size: var(--text-small); display: block; text-align: center;">退出账号</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container dashboard-layout" id="dash-grid" style="transition: grid-template-columns 0.3s ease;">
+        <aside class="sidebar" id="dashboard-sidebar" style="display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; transition: opacity 0.2s ease;">
+            <div style="min-width: 200px;">
+                <a href="dashboard.html" class="nav-item active">我的形象库</a>
+                <a href="dashboard_assets.html" class="nav-item">资产与订单</a>
+                <a href="dashboard_settings.html" class="nav-item">账户设置</a>
+                <a href="dashboard_privacy.html" class="nav-item">隐私与数据控制</a>
+                <div style="height: 1px; background-color: var(--color-border-subtle); margin: var(--space-8) 0;"></div>
+                <a href="admin.html" class="nav-item" data-admin-only style="display: none; color: var(--color-status-success); font-weight: var(--weight-medium);"><span style="margin-right:8px;">★</span>高管数据中心</a>
+                <a href="support.html" class="nav-item" style="color: var(--color-text-tertiary);"><span style="margin-right:8px;">📞</span>联系人工客服</a>
+            </div>
+        </aside>
+
+        <main class="content-area">
+            <div class="flex-row justify-between align-center mb-xl">
+                <h1 style="font-size: var(--text-h2);">我的形象照图库</h1>
+                <a href="upload.html" class="btn btn-primary">新建任务</a>
+            </div>
+
+            <!-- 空状态 -->
+            <div class="empty-dash" id="empty-state" style="display: none;">
+                <div style="font-size: 3rem; margin-bottom: var(--space-16);">📂</div>
+                <h3 class="mb-sm">您还没有生成过任何形象照</h3>
+                <p class="mb-lg" style="color: var(--color-text-secondary);">所有生成失败或废弃的底稿也会保留在这里，你的第一次出场，从这里开始。</p>
+                <a href="upload.html" class="btn btn-secondary">立即去生成</a>
+            </div>
+
+            <!-- 数据渲染层 -->
+            <div id="unlocked-section" style="display: none;" class="mb-xl">
+                <h3 class="mb-md" style="font-size: var(--text-h3);">✨ 已经确认生成的（已付款）</h3>
+                <div class="gallery-grid" id="grid-unlocked"></div>
+            </div>
+
+            <div id="preview-section" style="display: none;" class="mb-xl">
+                <h3 class="mb-md" style="font-size: var(--text-h3); color: var(--color-text-secondary);">🔒 仅供预览试看的（待结算）</h3>
+                <div class="gallery-grid" id="grid-preview"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="./assets/js/app.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            try {
+                const session = await window.ImpeccableApp.requireAuth("login.html");
+                window.ImpeccableApp.applyRoleVisibility(session);
+                const userName = session.user.name;
+                document.getElementById("user-display-name").innerText = userName;
+                document.getElementById("user-avatar-letter").innerText = userName.charAt(0).toUpperCase();
+                await loadAssets();
+            } catch (_error) {
+                // Redirect handled in helper.
+            }
+        });
+
+        async function loadAssets() {
+            const response = await window.ImpeccableApp.apiFetch("/api/jobs");
+            const assets = response.jobs || [];
+            const emptyState = document.getElementById('empty-state');
+            const unlockedSection = document.getElementById('unlocked-section');
+            const previewSection = document.getElementById('preview-section');
+            const gridUnlocked = document.getElementById('grid-unlocked');
+            const gridPreview = document.getElementById('grid-preview');
+
+            gridUnlocked.innerHTML = '';
+            gridPreview.innerHTML = '';
+            emptyState.style.display = 'none';
+            unlockedSection.style.display = 'none';
+            previewSection.style.display = 'none';
+
+            if (assets.length === 0) {
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            let hasUnlocked = false;
+            let hasPreview = false;
+
+            assets.forEach(asset => {
+                const timeString = window.ImpeccableApp.formatDateTime(asset.createdAt);
+                
+                const card = document.createElement('div');
+                card.className = 'gallery-item';
+
+                if (asset.status === 'unlocked') {
+                    hasUnlocked = true;
+                    card.innerHTML = `
+                        <div class="gallery-mock-img" style="background-color: var(--color-surface-subtle); background-image: url('${asset.coverImageUrl || ''}'); background-size: cover; background-position: center;">
+                        </div>
+                        <div class="gallery-info flex-row justify-between align-center">
+                            <div>
+                                <div style="font-weight: var(--weight-medium); font-size: var(--text-small);">形象档案批次</div>
+                                <div style="color: var(--color-text-tertiary); font-size: 12px;">${timeString}</div>
+                            </div>
+                            <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px;" onclick="window.location.href='result.html?batchId=${asset.id}'">管理全集</button>
+                        </div>
+                    `;
+                    gridUnlocked.appendChild(card);
+                } else {
+                    hasPreview = true;
+                    card.innerHTML = `
+                        <div class="gallery-mock-img" style="background-color: var(--color-border-subtle); background-image: url('${asset.coverImageUrl || ''}'); background-size: cover; background-position: center;">
+                            <div class="watermark-overlay"><div class="watermark-tag">锁定草稿</div></div>
+                        </div>
+                        <div class="gallery-info flex-row justify-between align-center">
+                            <div>
+                                <div style="font-weight: var(--weight-medium); font-size: var(--text-small); color: var(--color-text-secondary);">留存定妆初稿</div>
+                                <div style="color: var(--color-status-error); font-size: 12px;">水管加密未解锁</div>
+                            </div>
+                            <button class="btn btn-primary" style="padding: 4px 8px; font-size: 12px;" onclick="window.location.href='result.html?batchId=${asset.id}'">继续处理</button>
+                        </div>
+                    `;
+                    gridPreview.appendChild(card);
+                }
+            });
+
+            if(hasUnlocked) unlockedSection.style.display = 'block';
+            if(hasPreview) previewSection.style.display = 'block';
+        }
+
+        function executeLogout() {
+            window.ImpeccableApp.logout('index.html');
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('dashboard-sidebar');
+            const grid = document.getElementById('dash-grid');
+            if (sidebar.style.opacity === '0') {
+                sidebar.style.opacity = '1';
+                setTimeout(() => sidebar.style.display = 'flex', 10);
+                grid.style.gridTemplateColumns = '240px 1fr';
+            } else {
+                sidebar.style.opacity = '0';
+                setTimeout(() => sidebar.style.display = 'none', 200);
+                grid.style.gridTemplateColumns = '0px 1fr';
+            }
+        }
+    </script>
+</body>
+</html>

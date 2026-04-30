@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>确认与下单 - AI 职业形象照</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="./assets/css/system.css">
+    <link rel="stylesheet" href="./assets/css/layout.css">
+    <link rel="stylesheet" href="./assets/css/components.css">
+
+    <style>
+        .workspace-layout { display: grid; grid-template-columns: 240px 1fr; gap: var(--space-48); min-height: calc(100vh - 80px); align-items: start; padding-top: var(--space-48); padding-bottom: var(--space-48); }
+        .steps-nav { position: sticky; top: 120px; }
+        .step-item { display: flex; align-items: center; gap: var(--space-12); padding: var(--space-12) 0; color: var(--color-text-tertiary); font-weight: var(--weight-medium); }
+        .step-item.active { color: var(--color-text-primary); }
+        .step-item.done { color: var(--color-text-secondary); }
+        .step-number { display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: var(--radius-full); background-color: var(--color-surface-elevated); font-size: var(--text-small); }
+        .step-item.active .step-number { background-color: var(--color-text-primary); color: var(--color-surface-pure); }
+        .step-item.done .step-number { background-color: transparent; border: 1px solid var(--color-text-secondary); color: var(--color-text-secondary); }
+
+        .summary-block {
+            padding: var(--space-24);
+            border: 1px solid var(--color-border-subtle);
+            border-radius: var(--radius-lg);
+            background-color: var(--color-surface-pure);
+            margin-bottom: var(--space-24);
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: var(--space-16) 0;
+            border-bottom: 1px solid var(--color-surface-elevated);
+        }
+        .summary-row:last-child { border-bottom: none; padding-bottom: 0; }
+        .summary-row:first-child { padding-top: 0; }
+
+        .price-total {
+            font-size: var(--text-h2);
+            font-weight: var(--weight-semibold);
+            text-align: right;
+            margin-top: var(--space-16);
+            color: var(--color-text-primary);
+        }
+        
+        .trust-text {
+            font-size: var(--text-small);
+            color: var(--color-text-tertiary);
+            text-align: center;
+            margin-top: var(--space-16);
+        }
+        .payment-panel {
+            margin-top: var(--space-24);
+            padding: var(--space-24);
+            border: 1px solid var(--color-border-subtle);
+            border-radius: var(--radius-lg);
+            background: linear-gradient(135deg, #f7fff9 0%, #ffffff 45%, #f6f8fb 100%);
+        }
+        .qr-box {
+            width: 168px;
+            height: 168px;
+            display: grid;
+            place-items: center;
+            border: 1px solid var(--color-border-subtle);
+            border-radius: var(--radius-md);
+            background:
+                repeating-linear-gradient(45deg, #111 0 4px, transparent 4px 8px),
+                #fff;
+            color: #fff;
+            font-weight: var(--weight-semibold);
+            text-align: center;
+            box-shadow: inset 0 0 0 28px #fff;
+        }
+
+        @media (max-width: 768px) {
+            .workspace-layout { grid-template-columns: 1fr; gap: var(--space-24); padding-top: var(--space-16); padding-bottom: 32px; }
+            .steps-nav { display: flex; overflow-x: auto; position: relative; top: 0; padding-bottom: var(--space-8); border-bottom: 1px solid var(--color-border-subtle); }
+            .step-item { flex-shrink: 0; padding: var(--space-8) var(--space-12); }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="header-sticky" style="height: 64px; display: flex; align-items: center; border-bottom: 1px solid var(--color-border-subtle);">
+        <div class="container flex-row justify-between w-100" style="width: 100%;">
+            <a href="index.html" style="font-weight: var(--weight-semibold); font-size: 1.1rem; color: var(--color-text-primary);">Auralis<span style="color:var(--color-text-secondary); margin-left: 6px; font-size: .82em; letter-spacing: .08em;">曜临</span></a>
+            <span style="font-size: var(--text-small); color: var(--color-text-tertiary);">订单安全加密</span>
+        </div>
+    </nav>
+
+    <div class="container workspace-layout">
+        
+        <aside class="steps-nav">
+            <div class="step-item done"><div class="step-number">✓</div><span>上传照片</span></div>
+            <div class="step-item done"><div class="step-number">✓</div><span>选择风格</span></div>
+            <div class="step-item active"><div class="step-number">3</div><span>确认信息</span></div>
+            <div class="step-item"><div class="step-number">4</div><span>结果生成</span></div>
+        </aside>
+
+        <main class="content-area">
+            <div class="mb-lg">
+                <h1 class="mb-sm" style="font-size: var(--text-h2);">确认订单并开始生成</h1>
+                <p style="margin: 0;">请最后检查你的生成配置。开始生成会立即扣除积分，结果不再二次收费。</p>
+            </div>
+
+            <div class="summary-block">
+                <div class="summary-row">
+                    <span style="color: var(--color-text-secondary);">已上传照片对象</span>
+                    <span style="font-weight: var(--weight-medium);" id="checkout-upload-summary"><span class="badge">正在读取上传队列...</span></span>
+                </div>
+                <div class="summary-row">
+                    <span style="color: var(--color-text-secondary);">影像风格解析</span>
+                    <span style="font-weight: var(--weight-medium); text-align: right;" id="checkout-style-summary">求职简历场景<br><span style="color:var(--color-text-tertiary); font-size: var(--text-small);">正在读取风格配置...</span></span>
+                </div>
+                <div class="summary-row">
+                    <span style="color: var(--color-text-secondary);">套餐权益 (基础版)</span>
+                    <span style="font-weight: var(--weight-medium); text-align: right;" id="checkout-package-summary">20 张结果输出<br><span style="color:var(--color-text-tertiary); font-size: var(--text-small);">标准分辨率 / 2种发型搭配</span></span>
+                </div>
+                <div class="summary-row" style="background-color: var(--color-surface-subtle); margin: var(--space-16) -var(--space-24) -var(--space-24); padding: var(--space-24); border-radius: 0 0 var(--radius-lg) var(--radius-lg);">
+                    <div style="width: 100%;">
+                        <div class="flex-row justify-between mb-sm">
+                            <span style="color: var(--color-text-secondary);">本次生成扣除</span>
+                            <span class="price-total" style="margin-top: 0;" id="checkout-price">100 积分</span>
+                        </div>
+                        <div class="flex-row justify-between mb-sm" style="font-size: var(--text-small); color: var(--color-text-secondary);">
+                            <span>账户当前积分</span>
+                            <span id="checkout-credits">读取中...</span>
+                        </div>
+                        <button class="btn btn-primary" style="width: 100%; margin-top: var(--space-16);" id="checkout-submit-btn" onclick="beginCheckout()">扣除积分并开始生成</button>
+                        <div class="trust-text">创建任务先扣积分；每个任务包含 2 次免费重绘机会。</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="payment-panel" id="wechat-payment-panel">
+                <div class="flex-row justify-between align-start" style="gap: var(--space-24); flex-wrap: wrap;">
+                    <div style="max-width: 520px;">
+                        <div class="badge badge-success mb-sm">微信支付</div>
+                        <h2 style="font-size: var(--text-h3); margin-bottom: var(--space-8);">积分不足时先充值，再生成</h2>
+                        <p style="margin: 0; color: var(--color-text-secondary);">按微信支付 Native 扫码逻辑创建预支付订单。当前本地未填商户密钥时，会使用模拟支付完成 UX 和业务闭环；填入商户参数后会请求微信支付下单接口。</p>
+                        <div style="margin-top: var(--space-16); font-size: var(--text-small); color: var(--color-text-secondary);">充值套餐：<strong style="color: var(--color-text-primary);">1000 积分 / ¥99.00</strong></div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div class="qr-box" id="wechat-qr-box">待创建<br>支付码</div>
+                        <button class="btn btn-secondary" style="margin-top: var(--space-12); width: 100%;" id="wechat-pay-btn" onclick="createWeChatPayment()">微信支付充值</button>
+                        <button class="btn btn-ghost" style="margin-top: var(--space-8); width: 100%; display: none;" id="mock-confirm-btn" onclick="confirmMockPayment()">本地模拟已支付</button>
+                    </div>
+                </div>
+            </div>
+            
+            <a href="style.html" class="btn btn-ghost" style="display: block; text-align: center;">返回修改风格</a>
+
+        </main>
+    </div>
+    <script src="./assets/js/app.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            try {
+                const session = await window.ImpeccableApp.requireAuth("login.html");
+                window.currentSession = session;
+                document.getElementById("checkout-credits").innerText = `${session.user.credits || 0} 积分`;
+                hydrateCheckoutSummary();
+            } catch (_error) {
+                // Redirect handled in helper.
+            }
+        });
+
+        function hydrateCheckoutSummary() {
+            const uploads = window.ImpeccableApp.getUploadQueue();
+            const styleConfig = window.ImpeccableApp.getStyleConfig();
+
+            if (!uploads.length) {
+                window.location.href = "upload.html";
+                return;
+            }
+
+            document.getElementById("checkout-upload-summary").innerHTML = `<span class="badge">已存入队列 ${uploads.length} 张</span>`;
+            document.getElementById("checkout-style-summary").innerHTML = `求职简历场景<br><span style="color:var(--color-text-tertiary); font-size: var(--text-small);">${styleConfig.summary || "亲和专业 / 适度美颜 / 智能背景"}</span>`;
+        }
+
+        async function beginCheckout() {
+            const uploads = window.ImpeccableApp.getUploadQueue();
+            const styleConfig = window.ImpeccableApp.getStyleConfig();
+
+            if (!uploads.length) {
+                alert("请先上传照片后再继续。");
+                window.location.href = "upload.html";
+                return;
+            }
+
+            const submitButton = document.getElementById("checkout-submit-btn");
+            submitButton.disabled = true;
+            submitButton.innerText = "正在扣除积分并创建任务...";
+
+            try {
+                const result = await window.ImpeccableApp.apiFetch("/api/jobs", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        uploadIds: uploads.map((item) => item.id),
+                        styleSummary: styleConfig.summary || "求职简历场景 / 亲和专业 / 智能背景",
+                        packageTier: "基础版",
+                        amountCents: 990
+                    })
+                });
+
+                sessionStorage.setItem("impeccable_current_job_id", result.jobId);
+                window.location.href = "generating.html?jobId=" + encodeURIComponent(result.jobId);
+            } catch (error) {
+                submitButton.disabled = false;
+                submitButton.innerText = "扣除积分并开始生成";
+                alert(error.message || "创建订单失败，请稍后再试。");
+            }
+        }
+
+        let activePaymentOrderId = null;
+
+        async function createWeChatPayment() {
+            const payButton = document.getElementById("wechat-pay-btn");
+            payButton.disabled = true;
+            payButton.innerText = "正在创建微信支付订单...";
+
+            try {
+                const payment = await window.ImpeccableApp.apiFetch("/api/payments/wechat/prepay", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        credits: 1000,
+                        amountCents: 9900
+                    })
+                });
+                activePaymentOrderId = payment.orderId;
+                document.getElementById("wechat-qr-box").innerHTML = payment.mock ? "模拟<br>微信支付" : "微信<br>扫码支付";
+                document.getElementById("mock-confirm-btn").style.display = payment.mock ? "block" : "none";
+                payButton.innerText = payment.mock ? "已创建模拟订单" : "已创建支付码";
+            } catch (error) {
+                payButton.disabled = false;
+                payButton.innerText = "微信支付充值";
+                alert(error.message || "微信支付下单失败。");
+            }
+        }
+
+        async function confirmMockPayment() {
+            if (!activePaymentOrderId) {
+                alert("请先创建支付订单。");
+                return;
+            }
+
+            const result = await window.ImpeccableApp.apiFetch("/api/payments/wechat/mock-confirm", {
+                method: "POST",
+                body: JSON.stringify({ orderId: activePaymentOrderId })
+            });
+            window.currentSession = { authenticated: true, user: result.user };
+            document.getElementById("checkout-credits").innerText = `${result.user.credits || 0} 积分`;
+            document.getElementById("mock-confirm-btn").style.display = "none";
+            document.getElementById("wechat-pay-btn").innerText = "充值成功";
+            alert("充值成功，积分已到账。现在可以扣除积分开始生成。");
+        }
+    </script>
+</body>
+</html>

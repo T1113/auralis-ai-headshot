@@ -13,9 +13,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
     
     <!-- Impeccable CSS System -->
-    <link rel="stylesheet" href="/static/css/system.css">
-    <link rel="stylesheet" href="/static/css/layout.css">
-    <link rel="stylesheet" href="/static/css/components.css">
+    <link rel="stylesheet" href="./assets/css/system.css">
+    <link rel="stylesheet" href="./assets/css/layout.css">
+    <link rel="stylesheet" href="./assets/css/components.css">
 
     <!-- Page Specific Styles (Kept in-file for performance during prototyping) -->
     <style>
@@ -25,32 +25,13 @@
             grid-template-columns: repeat(2, 1fr);
             gap: var(--space-16);
         }
-        .hero-image-card {
-            position: relative;
+        .hero-img-placeholder {
             width: 100%;
             aspect-ratio: 3/4;
             background-color: var(--color-surface-elevated);
             border-radius: var(--radius-md);
             border: 1px solid var(--color-border-subtle);
-            overflow: hidden;
-            box-shadow: var(--shadow-md);
-        }
-        .hero-image-card img {
-            display: block;
-            width: 100%;
-            height: 100%;
             object-fit: cover;
-        }
-        .hero-image-badge {
-            position: absolute;
-            left: var(--space-16);
-            bottom: var(--space-16);
-            padding: 6px 10px;
-            border-radius: var(--radius-full);
-            background: rgba(0, 0, 0, 0.68);
-            color: #fff;
-            font-size: 12px;
-            font-weight: var(--weight-medium);
         }
 
         /* 3-step icons */
@@ -94,23 +75,6 @@
         .nav-link:hover {
             color: var(--color-text-primary);
         }
-
-        @media (max-width: 768px) {
-            .hero-cta-row {
-                flex-direction: column;
-                align-items: stretch;
-                width: 100%;
-            }
-            .hero-images {
-                gap: var(--space-12);
-            }
-            .hero-image-card {
-                box-shadow: var(--shadow-sm);
-            }
-            .hero-image-card:nth-child(2) {
-                transform: translateY(16px) !important;
-            }
-        }
     </style>
 </head>
 <body>
@@ -141,7 +105,7 @@
             <div class="col-5 flex-col align-start">
                 <h1 class="mb-md">几张自拍，快速生成专业形象照</h1>
                 <p class="mb-lg" style="color: var(--color-text-secondary); max-width: 600px;">不再为了找影楼、选服装、反复拍摄而烦恼。仅需三步，即可将自拍转换为专业级职场头像，适用于 Linkedin、官网简历及企业名片。</p>
-                <div class="flex-row gap-md mb-lg hero-cta-row">
+                <div class="flex-row gap-md mb-lg">
                     <a href="#" onclick="handleGenerateClick(event)" class="btn btn-primary btn-mobile-full" style="padding: var(--space-16) var(--space-48); font-size: 1.1rem; border-radius: var(--radius-full);">立即开始生成照</a>
                     <a href="#cases" class="btn btn-secondary btn-mobile-full">查看案例</a>
                 </div>
@@ -156,14 +120,8 @@
             <!-- Right Visual Component -->
             <div class="col-7">
                 <div class="hero-images">
-                    <div class="hero-image-card" style="border-radius: var(--radius-lg) 0 var(--radius-lg) var(--radius-lg);">
-                        <img src="/static/assets/showcase/source-selfie.jpg" alt="普通自拍原图示例">
-                        <span class="hero-image-badge">普通自拍</span>
-                    </div>
-                    <div class="hero-image-card" style="border-radius: 0 var(--radius-lg) var(--radius-lg) var(--radius-lg); transform: translateY(24px);">
-                        <img src="/static/assets/showcase/pro-headshot.jpg" alt="AI 生成职业形象照示例">
-                        <span class="hero-image-badge">AI 职业形象照</span>
-                    </div>
+                    <div class="hero-img-placeholder" style="border-radius: var(--radius-lg) 0 var(--radius-lg) var(--radius-lg);"></div>
+                    <div class="hero-img-placeholder" style="border-radius: 0 var(--radius-lg) var(--radius-lg) var(--radius-lg); transform: translateY(24px);"></div>
                 </div>
             </div>
         </div>
@@ -187,14 +145,14 @@
                 <div class="card-ghost">
                     <div class="step-icon">3</div>
                     <h3 class="mb-sm">下载结果</h3>
-                    <p style="margin-bottom: 0;">几分钟后即可预览结果，满意后扣除算力点并保存到形象库。</p>
+                    <p style="margin-bottom: 0;">几分钟后即可预览结果，支持多比例原图直接下载与导出。</p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- 4. Scenarios -->
-    <section class="section" id="cases">
+    <section class="section">
         <div class="container">
             <h2 class="mb-lg">适合这些使用场景</h2>
             <div class="grid-auto">
@@ -233,9 +191,9 @@
                     <p class="mb-lg">适合只需快速更新一次头像的用户。</p>
                     <div style="font-size: var(--text-h2); font-weight: var(--weight-semibold);" class="mb-lg">¥9.9</div>
                     <ul class="flex-col gap-sm mb-lg" style="list-style: none; color: var(--color-text-secondary); font-size: var(--text-small);">
-                        <li>✓ 生成 1 张职业形象照</li>
-                        <li>✓ 支持服装与颜色选择</li>
-                        <li>✓ 保存到个人形象库</li>
+                        <li>✓ 20 张高清结果</li>
+                        <li>✓ 2 种商务风格</li>
+                        <li>✓ 标准分辨率下载</li>
                         <li style="color: var(--color-text-tertiary); text-decoration: line-through;">商业使用授权</li>
                     </ul>
                     <a href="#" onclick="handleGenerateClick(event)" class="btn btn-secondary" style="margin-top: auto;">开始生成</a>
@@ -245,12 +203,12 @@
                 <div class="card highlight flex-col" style="position: relative;">
                     <div class="badge" style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background-color: var(--color-text-primary); color: var(--color-surface-pure);">最受欢迎</div>
                     <h3 class="mb-sm">专业版</h3>
-                    <p class="mb-lg">适合求职、商务沟通、多平台多套系反复生成。</p>
+                    <p class="mb-lg">适合求职、商务沟通、多平台多套系使用。</p>
                     <div style="font-size: var(--text-h2); font-weight: var(--weight-semibold);" class="mb-lg">¥29.9</div>
                     <ul class="flex-col gap-sm mb-lg" style="list-style: none; color: var(--color-text-secondary); font-size: var(--text-small);">
-                        <li>✓ 20 点算力额度</li>
-                        <li>✓ 每次预览满意后扣 1 点</li>
-                        <li>✓ 高清原图下载</li>
+                        <li>✓ 60 张极清结果</li>
+                        <li>✓ 5 种高级场景风格</li>
+                        <li>✓ 原图 4K 分辨率下载</li>
                         <li>✓ 包含商业使用授权</li>
                         <li>✓ 免费补生成 1 次</li>
                     </ul>
@@ -327,7 +285,7 @@
                         <div style="font-weight: var(--weight-medium); color: var(--color-text-primary);">最快通道：直接添加开发者微信</div>
                         <div style="font-size: var(--text-small); color: var(--color-text-secondary); margin-top: 4px;">微信号：<span style="font-weight: bold; color: var(--color-text-primary);">Auralis_Yaolin</span></div>
                     </div>
-                    <button class="btn btn-primary" style="padding: 8px 16px; font-size: 12px; height: auto;" onclick="alert('微信号已复制！')">复制</button>
+                    <button class="btn btn-primary" style="padding: 8px 16px; font-size: 12px; height: auto;" onclick="copyWechatId()">复制</button>
                 </div>
             </div>
 
@@ -347,10 +305,11 @@
                 <label for="sales-contact">手机号 / 微信 / QQ (选填)</label>
             </div>
             
-            <button class="btn btn-secondary" style="width: 100%;" onclick="closeSalesModal(); alert('留言已收到，我们会尽快评估并联络您。')">发送留言</button>
+            <button class="btn btn-secondary" style="width: 100%;" onclick="submitSalesLead('index')">发送留言</button>
         </div>
     </div>
 
+    <script src="./assets/js/app.js"></script>
     <script>
         function openSalesModal() {
             document.getElementById('sales-modal').classList.add('active');
@@ -359,25 +318,53 @@
             document.getElementById('sales-modal').classList.remove('active');
         }
 
-        // Check login state
-        document.addEventListener('DOMContentLoaded', () => {
-            const userName = localStorage.getItem('impeccable_user');
-            if (userName) {
-                // If logged in, change the top nav "Login" to User's Name
+        document.addEventListener('DOMContentLoaded', async () => {
+            const session = await window.ImpeccableApp.syncSession();
+            if (session.authenticated) {
                 const loginBtn = document.getElementById('nav-login-btn');
                 if (loginBtn) {
-                    loginBtn.innerText = "进入控制台 (" + userName + ")";
+                    loginBtn.innerText = "进入控制台 (" + session.user.name + ")";
                     loginBtn.href = "dashboard.html";
                 }
             }
         });
 
-        function handleGenerateClick(e) {
+        async function handleGenerateClick(e) {
             e.preventDefault();
-            if(!localStorage.getItem('impeccable_user')) {
+            const session = await window.ImpeccableApp.syncSession();
+            if(!session.authenticated) {
                 window.location.href = 'login.html';
             } else {
                 window.location.href = 'upload.html';
+            }
+        }
+
+        async function submitSalesLead(source) {
+            const payload = {
+                source: source,
+                name: document.getElementById("sales-name").value.trim(),
+                company: document.getElementById("sales-company").value.trim(),
+                contact: document.getElementById("sales-contact").value.trim()
+            };
+
+            try {
+                await window.ImpeccableApp.apiFetch("/api/leads/contact", {
+                    method: "POST",
+                    body: JSON.stringify(payload)
+                });
+                closeSalesModal();
+                alert("留言已收到，我们会尽快评估并联络您。");
+            } catch (error) {
+                alert(error.message || "发送失败，请稍后再试。");
+            }
+        }
+
+        async function copyWechatId() {
+            try {
+                await navigator.clipboard.writeText("Auralis_Yaolin");
+                alert("微信号已复制！");
+            } catch (_error) {
+                alert("复制失败，请手动添加：Auralis_Yaolin");
             }
         }
     </script>
