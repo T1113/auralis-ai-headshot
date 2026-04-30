@@ -5,6 +5,10 @@
 </p>
 
 <p align="center">
+  <b>简体中文</b> | <a href="README_EN.md">English</a> | <a href="README_JA.md">日本語</a>
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/Stack-Cloudflare_Workers-F38020?style=for-the-badge&logo=cloudflare&logoColor=white" alt="Cloudflare">
   <img src="https://img.shields.io/badge/Database-D1-00ADD8?style=for-the-badge&logo=sqlite&logoColor=white" alt="D1">
   <img src="https://img.shields.io/badge/Storage-R2-FF9900?style=for-the-badge&logo=amazon-s3&logoColor=white" alt="R2">
