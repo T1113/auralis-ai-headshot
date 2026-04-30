@@ -1,86 +1,88 @@
 # Auralis 曜临 - AI 形象照独立站
 
-![Auralis Banner](https://raw.githubusercontent.com/username/repo/main/test-headshot.png)
+<p align="center">
+  <img src="test-headshot.png" alt="Auralis Banner" width="600px" style="border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+</p>
 
-> **极致优雅的 AI 形象照生成系统，支持网页端实时拍照与全栈云原生部署。**
+<p align="center">
+  <img src="https://img.shields.io/badge/Stack-Cloudflare_Workers-F38020?style=for-the-badge&logo=cloudflare&logoColor=white" alt="Cloudflare">
+  <img src="https://img.shields.io/badge/Database-D1-00ADD8?style=for-the-badge&logo=sqlite&logoColor=white" alt="D1">
+  <img src="https://img.shields.io/badge/Storage-R2-FF9900?style=for-the-badge&logo=amazon-s3&logoColor=white" alt="R2">
+  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="MIT License">
+</p>
 
-Auralis 曜临是一个专为“AI 形象照”设计的完整独立站解决方案。它不仅提供了精美的前端交互界面，还通过 Cloudflare 生态系统实现了高性能、低成本的全栈部署。
+---
+
+## 🌟 愿景：让专业形象照触手可及
+
+**Auralis 曜临** 是一款基于顶尖边缘计算技术的 AI 形象照生成系统。我们通过极致的 UX 设计，将复杂的 AI 生成流程简化为“拍照-选择-生成”三步走，为用户提供影棚级的专业肖像体验。
 
 ---
 
 ## ✨ 核心特性
 
-- **📸 网页端实时相机**：深度集成浏览器摄像头调用，支持前置/后置切换、实时预览、重拍及质量检测。
-- **🚀 全栈云原生架构**：基于 Cloudflare Workers + D1 数据库 + R2 存储空间，实现零成本起步的高可用架构。
-- **🎨 完整 UX 闭环**：涵盖上传、质量检测、风格选择、生成等待、结果展示的全流程。
-- **📊 管理端看板**：内置资产管理、隐私设置、个人资料调整等功能。
-- **🔍 极致 SEO 优化**：自动生成的 `robots.txt` 与 `sitemap.xml`，支持搜索引擎收录，营销页与私有页面权限隔离。
-- **📱 响应式设计**：完美适配移动端与桌面端，提供原生般的交互体验。
+- **📸 沉浸式相机系统**：深度集成 WebRTC，支持网页端实时取景、前置/后置切换，内置自拍指导建议。
+- **⚡ 边缘计算架构**：全栈部署于 Cloudflare Workers，全球毫秒级响应，告别昂贵的服务器维护。
+- **🛡️ 隐私与安全**：照片存储于加密的 R2 Bucket，处理完成后自动清理，严格保护用户隐私。
+- **🎨 精细化风格定制**：内置多种职场风格（金融、科技、时尚等），支持通过 Prompt 细微调整。
+- **🤖 自动化质检**：上传阶段自动检测光照、角度与遮挡，确保生成效果的最佳下限。
+- **📈 全栈管理后台**：从用户配额管理到生成任务监控，提供完整的一站式运营看板。
 
 ---
 
-## 🛠️ 技术栈
+## 🛠️ 技术深度
 
-- **Frontend**: Vanilla JS / HTML5 / CSS3 (极致加载速度)
-- **Backend**: Cloudflare Workers (Edge Computing)
-- **Database**: Cloudflare D1 (Serverless SQL)
-- **Storage**: Cloudflare R2 (Object Storage)
-- **Deployment**: Wrangler / GitHub Actions
+| 模块 | 技术实现 |
+| :--- | :--- |
+| **前端渲染** | 原生 HTML5/CSS3 + Vanilla JS (0 框架依赖，极致 SEO) |
+| **逻辑中枢** | Cloudflare Workers (JavaScript/ESM) |
+| **数据持久化** | Cloudflare D1 (SQL) |
+| **资产管理** | Cloudflare R2 (S3-compatible) |
+| **部署流程** | GitHub Actions + Wrangler CLI |
 
 ---
 
-## 📦 快速开始
+## 🚀 快速启动
 
-### 1. 克隆并安装
+### 1. 基础环境
 ```bash
 git clone https://github.com/your-username/auralis.git
 cd auralis
 npm install
 ```
 
-### 2. Cloudflare 配置
-1. 登录 Cloudflare: `npx wrangler login`
-2. 创建数据库: `npx wrangler d1 create impeccable-db`
-3. 创建存储桶: `npx wrangler r2 bucket create impeccable-uploads`
-4. 修改 `wrangler.jsonc` 中的 `database_id`。
-
-### 3. 部署
+### 2. 初始化云资源
 ```bash
-# 执行数据库迁移
-npx wrangler d1 migrations apply impeccable-db
+# 登录并验证
+npx wrangler login
 
-# 部署到 Cloudflare
+# 创建资源
+npx wrangler d1 create impeccable-db
+npx wrangler r2 bucket create impeccable-uploads
+```
+*提示：请将返回的 ID 填入 `wrangler.jsonc`。*
+
+### 3. 一键部署
+```bash
+npx wrangler d1 migrations apply impeccable-db
 npm run deploy
 ```
 
 ---
 
-## 📂 项目结构
+## 📂 目录导航
 
-```text
-├── 形象照/           # 静态资源与前端页面 (index, upload, dashboard...)
-├── src/             # Cloudflare Workers 后端逻辑 (worker.js)
-├── migrations/      # D1 数据库迁移脚本
-├── wrangler.jsonc    # Cloudflare 配置文件
-└── CLOUDFLARE_DEPLOY.md # 详细部署指南
-```
+- `形象照/`: 纯净的前端代码，包含精心调教的 CSS 变量系统。
+- `src/`: 高性能边缘函数逻辑。
+- `migrations/`: 结构化的数据库演进记录。
+- `docs/`: 包含 API 定义与架构演进文档。
 
 ---
 
-## 📸 效果展示
+## 🤝 贡献与反馈
 
-*在此处插入你的项目截图*
-
-- **上传页面**: 支持拖拽与本地相册。
-- **相机模式**: 网页内实时自拍。
-- **生成过程**: 动态进度反馈。
+我们欢迎任何形式的 PR 和 Issue。如果您觉得这个项目有帮助，请给它一个 ⭐️！
 
 ---
 
-## 📄 开源协议
-
-本项目基于 [MIT License](LICENSE) 开源。
-
----
-
-**Auralis 曜临** - 让每一个人都能轻松拥有专业的 AI 形象照。
+<p align="center">Made with ❤️ for the AI Community</p>
