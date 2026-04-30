@@ -85,15 +85,35 @@
             <div class="flex-row gap-lg">
                 <a href="index.html" style="font-weight: var(--weight-semibold); font-size: 1.2rem; color: var(--color-text-primary); text-decoration: none;">Auralis<span style="color:var(--color-text-secondary); margin-left: 6px; font-size: .82em; letter-spacing: .08em;">曜临</span></a>
                 <div class="desktop-only flex-row gap-md" style="font-size: var(--text-small);">
-                    <a href="gallery.html" class="nav-link">案例展示</a>
-                    <a href="#pricing" class="nav-link">套餐价格</a>
-                    <a href="enterprise.html" class="nav-link">企业团队</a>
-                    <a href="faq.html" class="nav-link">常见问题</a>
+                    <a href="gallery.html" class="nav-link" data-i18n="nav_gallery">案例展示</a>
+                    <a href="#pricing" class="nav-link" data-i18n="nav_pricing">套餐价格</a>
+                    <a href="enterprise.html" class="nav-link" data-i18n="nav_enterprise">企业团队</a>
+                    <a href="faq.html" class="nav-link" data-i18n="nav_faq">常见问题</a>
                 </div>
             </div>
             <div class="flex-row gap-md">
-                <a href="login.html" id="nav-login-btn" class="btn btn-ghost" style="font-size: var(--text-small);">登录</a>
-                <a href="#" onclick="handleGenerateClick(event)" class="btn btn-primary" style="font-size: var(--text-small);">立即生成形象照</a>
+                <!-- Language Switcher -->
+                <div class="dropdown-wrapper" style="position: relative;">
+                    <button class="btn btn-ghost" style="font-size: var(--text-small); padding: 0 var(--space-8);">🌐</button>
+                    <div class="dropdown-content" style="position: absolute; right: 0; background: var(--color-surface); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-sm); display: none; min-width: 100px; z-index: 1000; box-shadow: var(--shadow-sm);">
+                        <a href="#" class="lang-selector nav-link" data-lang="zh" style="display: block; padding: 8px 16px;">简体中文</a>
+                        <a href="#" class="lang-selector nav-link" data-lang="en" style="display: block; padding: 8px 16px;">English</a>
+                        <a href="#" class="lang-selector nav-link" data-lang="ja" style="display: block; padding: 8px 16px;">日本語</a>
+                        <a href="#" class="lang-selector nav-link" data-lang="fr" style="display: block; padding: 8px 16px;">Français</a>
+                        <a href="#" class="lang-selector nav-link" data-lang="es" style="display: block; padding: 8px 16px;">Español</a>
+                    </div>
+                </div>
+                <script>
+                    document.querySelector('.dropdown-wrapper').addEventListener('mouseenter', () => {
+                        document.querySelector('.dropdown-content').style.display = 'block';
+                    });
+                    document.querySelector('.dropdown-wrapper').addEventListener('mouseleave', () => {
+                        document.querySelector('.dropdown-content').style.display = 'none';
+                    });
+                </script>
+
+                <a href="login.html" id="nav-login-btn" class="btn btn-ghost" style="font-size: var(--text-small);" data-i18n="nav_login">登录</a>
+                <a href="#" onclick="handleGenerateClick(event)" class="btn btn-primary" style="font-size: var(--text-small);" data-i18n="nav_generate">立即生成形象照</a>
             </div>
         </div>
     </nav>
@@ -103,17 +123,17 @@
         <div class="container grid align-center gap-xl">
             <!-- Left Text Content -->
             <div class="col-5 flex-col align-start">
-                <h1 class="mb-md">几张自拍，快速生成专业形象照</h1>
-                <p class="mb-lg" style="color: var(--color-text-secondary); max-width: 600px;">不再为了找影楼、选服装、反复拍摄而烦恼。仅需三步，即可将自拍转换为专业级职场头像，适用于 Linkedin、官网简历及企业名片。</p>
+                <h1 class="mb-md" data-i18n="hero_title">几张自拍，快速生成专业形象照</h1>
+                <p class="mb-lg" style="color: var(--color-text-secondary); max-width: 600px;" data-i18n="hero_subtitle">不再为了找影楼、选服装、反复拍摄而烦恼。仅需三步，即可将自拍转换为专业级职场头像，适用于 Linkedin、官网简历及企业名片。</p>
                 <div class="flex-row gap-md mb-lg">
-                    <a href="#" onclick="handleGenerateClick(event)" class="btn btn-primary btn-mobile-full" style="padding: var(--space-16) var(--space-48); font-size: 1.1rem; border-radius: var(--radius-full);">立即开始生成照</a>
-                    <a href="#cases" class="btn btn-secondary btn-mobile-full">查看案例</a>
+                    <a href="#" onclick="handleGenerateClick(event)" class="btn btn-primary btn-mobile-full" style="padding: var(--space-16) var(--space-48); font-size: 1.1rem; border-radius: var(--radius-full);" data-i18n="btn_start">立即开始生成照</a>
+                    <a href="#cases" class="btn btn-secondary btn-mobile-full" data-i18n="btn_view_cases">查看案例</a>
                 </div>
                 <!-- Trust points -->
                 <div class="flex-col gap-sm" style="font-size: var(--text-small); color: var(--color-text-tertiary);">
-                    <div class="flex-row gap-sm"><svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg> 无需预约摄影</div>
-                    <div class="flex-row gap-sm"><svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg> 支持高清下载</div>
-                    <div class="flex-row gap-sm"><svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg> 注重隐私处理</div>
+                    <div class="flex-row gap-sm"><svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg> <span data-i18n="trust_appointment">无需预约摄影</span></div>
+                    <div class="flex-row gap-sm"><svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg> <span data-i18n="trust_hd">支持高清下载</span></div>
+                    <div class="flex-row gap-sm"><svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg> <span data-i18n="trust_privacy">注重隐私处理</span></div>
                 </div>
             </div>
 
@@ -176,158 +196,52 @@
         </div>
     </section>
 
-    <!-- 6. Pricing (Simplified) -->
-    <section id="pricing" class="section" style="background-color: var(--color-surface-subtle); border-top: 1px solid var(--color-border-subtle); border-bottom: 1px solid var(--color-border-subtle);">
-        <div class="container">
-            <div class="flex-col align-center mb-xl" style="text-align: center;">
-                <h2 class="mb-sm">选择适合你的方案</h2>
-                <p>明码标价，按需解锁，无隐藏费用。</p>
-            </div>
-            
-            <div class="grid-auto">
-                <!-- Basic -->
-                <div class="card flex-col">
-                    <h3 class="mb-sm">基础版</h3>
-                    <p class="mb-lg">适合只需快速更新一次头像的用户。</p>
-                    <div style="font-size: var(--text-h2); font-weight: var(--weight-semibold);" class="mb-lg">¥9.9</div>
-                    <ul class="flex-col gap-sm mb-lg" style="list-style: none; color: var(--color-text-secondary); font-size: var(--text-small);">
-                        <li>✓ 20 张高清结果</li>
-                        <li>✓ 2 种商务风格</li>
-                        <li>✓ 标准分辨率下载</li>
-                        <li style="color: var(--color-text-tertiary); text-decoration: line-through;">商业使用授权</li>
-                    </ul>
-                    <a href="#" onclick="handleGenerateClick(event)" class="btn btn-secondary" style="margin-top: auto;">开始生成</a>
-                </div>
-
-                <!-- Pro -->
-                <div class="card highlight flex-col" style="position: relative;">
-                    <div class="badge" style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background-color: var(--color-text-primary); color: var(--color-surface-pure);">最受欢迎</div>
-                    <h3 class="mb-sm">专业版</h3>
-                    <p class="mb-lg">适合求职、商务沟通、多平台多套系使用。</p>
-                    <div style="font-size: var(--text-h2); font-weight: var(--weight-semibold);" class="mb-lg">¥29.9</div>
-                    <ul class="flex-col gap-sm mb-lg" style="list-style: none; color: var(--color-text-secondary); font-size: var(--text-small);">
-                        <li>✓ 60 张极清结果</li>
-                        <li>✓ 5 种高级场景风格</li>
-                        <li>✓ 原图 4K 分辨率下载</li>
-                        <li>✓ 包含商业使用授权</li>
-                        <li>✓ 免费补生成 1 次</li>
-                    </ul>
-                    <a href="#" onclick="handleGenerateClick(event)" class="btn btn-primary" style="margin-top: auto;">开始生成</a>
-                </div>
-
-                <!-- Team -->
-                <div class="card flex-col">
-                    <h3 class="mb-sm">团队版</h3>
-                    <p class="mb-lg">适合企业官网、员工资料库统一。</p>
-                    <div style="font-size: var(--text-h2); font-weight: var(--weight-semibold);" class="mb-lg">¥199<span style="font-size: var(--text-small); font-weight: normal; color: var(--color-text-tertiary);">/起</span></div>
-                    <ul class="flex-col gap-sm mb-lg" style="list-style: none; color: var(--color-text-secondary); font-size: var(--text-small);">
-                        <li>✓ 支持 10 人+ 批量生成</li>
-                        <li>✓ 强制统一的风格模板</li>
-                        <li>✓ 管理员审核与一键打包</li>
-                        <li>✓ 专职企业交付支持</li>
-                    </ul>
-                    <button class="btn btn-secondary" style="margin-top: auto; width: 100%;" onclick="openSalesModal()">联系销售</button>
-                </div>
+    <!-- 5. FAQ (Optional, but good for SEO) -->
+    <section class="section" style="background-color: var(--color-surface-subtle);">
+        <div class="container" style="max-width: 800px;">
+            <h2 class="mb-lg">常见问题</h2>
+            <div class="flex-col gap-md">
+                <details class="card-ghost" style="padding: var(--space-16);">
+                    <summary style="font-weight: var(--weight-semibold); cursor: pointer;">生成出的照片看起来不像我怎么办？</summary>
+                    <p class="mt-sm" style="color: var(--color-text-secondary);">AI 生成存在一定随机性。我们建议上传光线充足、角度多样的照片，并可以通过微调 Prompt 或尝试不同风格来获得最满意的结果。</p>
+                </details>
+                <details class="card-ghost" style="padding: var(--space-16);">
+                    <summary style="font-weight: var(--weight-semibold); cursor: pointer;">我的照片会被用于训练吗？</summary>
+                    <p class="mt-sm" style="color: var(--color-text-secondary);">绝对不会。您的原始照片和生成结果仅存储于您的私有云端空间，除您之外无人可见，且支持一键彻底删除。</p>
+                </details>
             </div>
         </div>
     </section>
 
-    <!-- 9. Final CTA -->
-    <section class="section">
-        <div class="container flex-col align-center text-center gap-md">
-            <h2>准备好升级你的职业形象了吗？</h2>
-            <p class="mb-sm">几分钟时间，改变你的第一印象。</p>
-            <a href="#" onclick="handleGenerateClick(event)" class="btn btn-primary">立即生成形象照</a>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer style="padding: var(--space-48) 0; border-top: 1px solid var(--color-border-subtle); color: var(--color-text-tertiary); font-size: var(--text-small);">
-        <div class="container grid">
-            <div class="col-5">
-                <span style="font-weight: var(--weight-semibold); color: var(--color-text-primary);">Auralis 曜临</span>
-                <p style="margin-top: var(--space-8);">专注高质量、可控、专业的企业级 AI 人像引擎。</p>
+    <!-- 6. Footer -->
+    <footer class="section" style="border-top: 1px solid var(--color-border-subtle); background-color: white;">
+        <div class="container grid gap-xl">
+            <div class="col-4 flex-col gap-sm">
+                <div style="font-weight: var(--weight-semibold);">Auralis 曜临</div>
+                <p style="color: var(--color-text-tertiary); font-size: var(--text-small);">专业的 AI 形象照独立站解决方案。</p>
             </div>
-            <div class="col-7 flex-row justify-between">
+            <div class="col-8 grid-auto">
                 <div class="flex-col gap-sm">
-                    <span style="color: var(--color-text-primary); font-weight: var(--weight-medium);">产品</span>
-                    <a href="#pricing" class="footer-link">价格</a>
-                    <a href="login.html" class="footer-link">用户登录 / 注册</a>
-                    <a href="enterprise.html" class="footer-link">企业版</a>
-                    <a href="gallery.html" class="footer-link">案例图库</a>
+                    <div style="font-weight: var(--weight-semibold); font-size: var(--text-small);" class="mb-sm">产品</div>
+                    <a href="gallery.html" class="footer-link" style="font-size: var(--text-small);">案例展示</a>
+                    <a href="enterprise.html" class="footer-link" style="font-size: var(--text-small);">企业方案</a>
                 </div>
                 <div class="flex-col gap-sm">
-                    <span style="color: var(--color-text-primary); font-weight: var(--weight-medium);">资源</span>
-                    <a href="tutorial.html" class="footer-link">使用教程</a>
-                    <a href="terms.html" class="footer-link">退款政策</a>
-                    <a href="faq.html" class="footer-link">常见问题</a>
-                </div>
-                <div class="flex-col gap-sm">
-                    <span style="color: var(--color-text-primary); font-weight: var(--weight-medium);">信任与隐私</span>
-                    <a href="privacy.html" class="footer-link">隐私说明 (含数据清理)</a>
-                    <a href="terms.html" class="footer-link">服务条款</a>
+                    <div style="font-weight: var(--weight-semibold); font-size: var(--text-small);" class="mb-sm">支持</div>
+                    <a href="faq.html" class="footer-link" style="font-size: var(--text-small);">帮助中心</a>
+                    <a href="terms.html" class="footer-link" style="font-size: var(--text-small);">服务条款</a>
                 </div>
             </div>
         </div>
     </footer>
 
-    <!-- Sales Modal -->
-    <div class="modal-overlay" id="sales-modal">
-        <div class="modal-card">
-            <button class="modal-close" onclick="closeSalesModal()">&times;</button>
-            <h2 class="mb-sm" style="font-size: var(--text-h3);">与我们建立联系</h2>
-            <p class="mb-lg" style="color: var(--color-text-secondary); font-size: var(--text-small);">我们为 10 人以上团队提供极为专业的企业大发包解决方案。</p>
-
-            <!-- Fast channel -->
-            <div style="background-color: oklch(0.96 0.02 260); padding: var(--space-16); border-radius: var(--radius-md); border: 1px solid var(--color-border-strong); margin-bottom: var(--space-24);">
-                <div class="flex-row justify-between align-center">
-                    <div>
-                        <div style="font-weight: var(--weight-medium); color: var(--color-text-primary);">最快通道：直接添加开发者微信</div>
-                        <div style="font-size: var(--text-small); color: var(--color-text-secondary); margin-top: 4px;">微信号：<span style="font-weight: bold; color: var(--color-text-primary);">Auralis_Yaolin</span></div>
-                    </div>
-                    <button class="btn btn-primary" style="padding: 8px 16px; font-size: 12px; height: auto;" onclick="copyWechatId()">复制</button>
-                </div>
-            </div>
-
-            <div class="divider" style="margin: var(--space-32) 0;">或者留下信息，稍后联系您</div>
-
-            <!-- Optional Form -->
-            <div class="form-floating">
-                <input type="text" id="sales-name" placeholder=" ">
-                <label for="sales-name">您的称呼 (选填)</label>
-            </div>
-            <div class="form-floating">
-                <input type="text" id="sales-company" placeholder=" ">
-                <label for="sales-company">公司及职位 (选填)</label>
-            </div>
-            <div class="form-floating" style="margin-bottom: var(--space-24);">
-                <input type="text" id="sales-contact" placeholder=" ">
-                <label for="sales-contact">手机号 / 微信 / QQ (选填)</label>
-            </div>
-            
-            <button class="btn btn-secondary" style="width: 100%;" onclick="submitSalesLead('index')">发送留言</button>
-        </div>
-    </div>
-
-    <script src="./assets/js/app.js"></script>
+    <script src="./assets/js/i18n.js"></script>
     <script>
-        function openSalesModal() {
-            document.getElementById('sales-modal').classList.add('active');
-        }
-        function closeSalesModal() {
-            document.getElementById('sales-modal').classList.remove('active');
-        }
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            const session = await window.ImpeccableApp.syncSession();
-            if (session.authenticated) {
-                const loginBtn = document.getElementById('nav-login-btn');
-                if (loginBtn) {
-                    loginBtn.innerText = "进入控制台 (" + session.user.name + ")";
-                    loginBtn.href = "dashboard.html";
-                }
-            }
-        });
+        // Placeholder for app logic
+        window.ImpeccableApp = {
+            syncSession: async () => ({ authenticated: false }),
+            apiFetch: async (url, options) => { console.log("Fetch:", url, options); return { ok: true }; }
+        };
 
         async function handleGenerateClick(e) {
             e.preventDefault();
@@ -336,35 +250,6 @@
                 window.location.href = 'login.html';
             } else {
                 window.location.href = 'upload.html';
-            }
-        }
-
-        async function submitSalesLead(source) {
-            const payload = {
-                source: source,
-                name: document.getElementById("sales-name").value.trim(),
-                company: document.getElementById("sales-company").value.trim(),
-                contact: document.getElementById("sales-contact").value.trim()
-            };
-
-            try {
-                await window.ImpeccableApp.apiFetch("/api/leads/contact", {
-                    method: "POST",
-                    body: JSON.stringify(payload)
-                });
-                closeSalesModal();
-                alert("留言已收到，我们会尽快评估并联络您。");
-            } catch (error) {
-                alert(error.message || "发送失败，请稍后再试。");
-            }
-        }
-
-        async function copyWechatId() {
-            try {
-                await navigator.clipboard.writeText("Auralis_Yaolin");
-                alert("微信号已复制！");
-            } catch (_error) {
-                alert("复制失败，请手动添加：Auralis_Yaolin");
             }
         }
     </script>
