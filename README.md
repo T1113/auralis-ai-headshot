@@ -1,7 +1,7 @@
 # Auralis 曜临 - AI 形象照独立站
 
 <p align="center">
-  <img src="test-headshot.png" alt="Auralis Banner" width="600px" style="border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+  <img src="banner.png" alt="Auralis Banner" width="800px" style="border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
 </p>
 
 <p align="center">
